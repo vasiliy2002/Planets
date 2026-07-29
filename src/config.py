@@ -1,8 +1,8 @@
 # Конфигурационный файл
 
 # Стартовые размеры окна [пиксели]
-WINDOW_WIDTH = 480
-WINDOW_HEIGHT = 480
+WINDOW_WIDTH = 1000
+WINDOW_HEIGHT = 800
 
 # Ширина орбит [пиксели]
 ORBIT_LINEWIDTH = 1
@@ -13,11 +13,16 @@ ORBIT_COLOR = [0.2, 0.6, 0.8, 1.]
 # Цвет планет
 PLANET_COLOR = [1., 0.5, 0., 1.]
 
+MASS_CENTER_COLOR = [1., 0.41, 0.7]
+MASS_CENTER_SIZE = 16
+
 # Размер планет
 PLANET_SIZE = 16
 
 # Стартовый масштаб
-SCALE = 25
+SCALE = 0.95
+
+MASS_CENTER_LINEWIDTH = 1
 
 # Стартовая частота отрисовки
 FPS = 60
