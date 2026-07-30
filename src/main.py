@@ -8,6 +8,7 @@ from mass_center import MassCenter
 from kivy.clock import Clock
 from consts import *
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.scrollview import ScrollView
 
 import config
 import utils
@@ -64,27 +65,38 @@ class MainWidget(Widget):
         h = self.height
         
         for planet in self.planets:
-            planet.update_graphic(cx, cy, w, h, self.scale)
+            planet.update_size(cx, cy, w, h, self.scale)
 
         if self.mass_center:
             center_x, center_y, masses = utils.get_centers_and_masses(self.planets)
-            self.mass_center.update(center_x, center_y, masses, cx, cy, w, h, self.scale)
-            self.mass_center.update_trajectory(cx, cy, w, h, self.scale)
+            self.mass_center.update_size(cx, cy, w, h, self.scale)
+    
+    def update_poses(self):
+        for planet in self.planets:
+            planet.update_pos()
 
-    def run_planets(self, dt):
+        if self.mass_center:
+            center_x, center_y, masses = utils.get_centers_and_masses(self.planets)
+            self.mass_center.update_pos(center_x, center_y, masses)
+
+    def update_graphic(self, cx, cy, w, h):
+        for planet in self.planets:
+            planet.update_graphic(cx, cy, w, h, self.scale)
+
+        if self.mass_center:
+            self.mass_center.update_graphic(cx, cy, w, h, self.scale)
+
+    def update(self, dt):
+        self.update_poses()
+
         cx = self.center_x
         cy = self.center_y
         w = self.width 
         h = self.height
 
-        for planet in self.planets:
-            planet.update_planet(cx, cy, w, h, self.scale)
+        self.update_graphic(cx, cy, w, h)
 
-        if self.mass_center:
-            #print(self.mass_center.center)
-            center_x, center_y, masses = utils.get_centers_and_masses(self.planets)
-            self.mass_center.update(center_x, center_y, masses, cx, cy, w, h, self.scale)
-
+        
 class PlanetsApp(App):
     def build(self):
         layout = BoxLayout(spacing=10)
@@ -95,7 +107,7 @@ class PlanetsApp(App):
         layout.add_widget(mw)
         layout.add_widget(btn)
 
-        Clock.schedule_interval(mw.run_planets, 1.0/config.FPS)
+        Clock.schedule_interval(mw.update, 1.0/config.FPS)
         return layout
 
 if __name__ == "__main__":

@@ -14,13 +14,13 @@ ORBIT_COLOR = [0.2, 0.6, 0.8, 1.]
 PLANET_COLOR = [1., 0.5, 0., 1.]
 
 MASS_CENTER_COLOR = [1., 0.41, 0.7]
-MASS_CENTER_SIZE = 16
+MASS_CENTER_SIZE = 12
 
 # Размер планет
-PLANET_SIZE = 16
+PLANET_SIZE = 12
 
 # Стартовый масштаб
-SCALE = 0.95
+SCALE = 2
 
 MASS_CENTER_LINEWIDTH = 1
 
