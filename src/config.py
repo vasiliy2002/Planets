@@ -1,8 +1,8 @@
 # Конфигурационный файл
 
 # Стартовые размеры окна [пиксели]
-WINDOW_WIDTH = 1000
-WINDOW_HEIGHT = 800
+WINDOW_WIDTH = 500
+WINDOW_HEIGHT = 500
 
 # Ширина орбит [пиксели]
 ORBIT_LINEWIDTH = 1
@@ -20,7 +20,9 @@ MASS_CENTER_SIZE = 12
 PLANET_SIZE = 12
 
 # Стартовый масштаб
-SCALE = 2
+SCALE = 5
+
+MIN_SCALE, MAX_SCALE = 0.05, 300
 
 MASS_CENTER_LINEWIDTH = 1
 

@@ -11,6 +11,8 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
+from kivy.uix.textinput import TextInput
+from kivy.properties import NumericProperty
 
 import config
 import utils
@@ -22,11 +24,11 @@ Window.size = (config.WINDOW_WIDTH, config.WINDOW_HEIGHT)
 
 
 class MainWidget(Widget):
+    scale = NumericProperty(config.SCALE, min=0.01, max=300)
+
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-        # Масштаб
-        self.scale = config.SCALE
 
         self.mass_center = None
 
@@ -98,25 +100,33 @@ class MainWidget(Widget):
 
         self.update_graphic(cx, cy, w, h)
 
+    def mul_scale(self, mul):
+        value = round(self.scale * mul, 2)
+        self.scale = max(config.MIN_SCALE, min(value, config.MAX_SCALE))
+
     def rescale(self, instance, k):
-        self.scale *= k
-        self.scale = max(self.scale, 0)
-        self.on_size(instance, k)
+        self.mul_scale(k)
 
     def on_touch_down(self, touch):
         if touch.button == 'scrollup':
-            self.scale *= 0.83
+            self.mul_scale(0.83)
         elif touch.button == 'scrolldown':
-            self.scale *= 1.2
+            self.mul_scale(1.2)
         else:
             return super().on_touch_down(touch)
 
-        self.scale = max(self.scale, 0.01)
-        self.scale = min(self.scale, 300)
-
-        self.on_size(None, None)
         return True
-        
+
+    def update_scale(self, instance, value):
+        if not value:
+            return
+        value = float(value)
+        self.scale = max(config.MIN_SCALE, min(value, config.MAX_SCALE))
+
+    def on_scale(self, instance, value):
+        self.txt_input.text = str(value)
+        self.on_size(None, None)        
+
 class PlanetsApp(App):
     def build(self):
         layout = BoxLayout(spacing=10)
@@ -138,10 +148,16 @@ class PlanetsApp(App):
 
         scale_minus_btn = Button(text="-", font_size=16)
         scale_minus_btn.bind(on_press=lambda instance: mw.rescale(instance, 0.67))
+        scale_text = TextInput(text=str(config.SCALE))
 
         scale_layout.add_widget(scale_label)
         scale_layout.add_widget(scale_plus_btn)
         scale_layout.add_widget(scale_minus_btn)
+        scale_layout.add_widget(scale_text)
+
+        mw.txt_input = scale_text
+        scale_text.bind(text=mw.update_scale)
+        #mw.bind(scale=mw.update_txt_input)
 
         control_panel.add_widget(scale_layout)
         control_panel.add_widget(btn)
@@ -151,9 +167,6 @@ class PlanetsApp(App):
 
 if __name__ == "__main__":
     PlanetsApp().run()
-
-
-
 
 
 
