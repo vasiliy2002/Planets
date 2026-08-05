@@ -4,8 +4,10 @@ import utils
 
 
 class Planet:
-    def __init__(self, mass, radius, period, orbit_size, orbit_graphic, planet_graphic, pos):
+    def __init__(self, start_time, mass, radius, period, orbit_size, orbit_graphic, planet_graphic, pos):
         self.mass = mass
+
+        self.start_time = start_time
 
         # Значения радиуса и периода из consts.py
         self.radius = radius
@@ -20,10 +22,11 @@ class Planet:
 
         # Позиция из config.py
         self.pos = pos
+        self.start_pos = pos
 
 
-    def update_pos(self):
-        self.pos += math.pi * 2 / self.period
+    def update_pos(self, t):
+        self.pos = ( (t - self.start_time) % self.period ) / self.period * 2 * math.pi + self.start_pos
     
     def get_xy(self):
         return math.cos(self.pos) * self.orbit_size, math.sin(self.pos) * self.orbit_size 

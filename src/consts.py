@@ -1,3 +1,7 @@
+import datetime as dt
+
+
+
 # Константы
 
 # --- Радиусы орбит [а. е.] ---
@@ -18,15 +22,15 @@ RADIUSES = [
 
 # --- Период вращения вокруг Солнца [земной день] ---
 PERIODS = [
-	87.97, # Меркурий
-	224.7, # Венера
-	365.256, # Земля
-	686.98, # Марс
-	4332.59, # Юпитер
-	10756, # Сатурн
-	30688, # Уран
-	60190, # Нептун
-	90560 # Плутон
+	dt.timedelta(days=87, hours=23, minutes=15, seconds=43, microseconds=804800), # Меркурий
+	dt.timedelta(days=224, hours=16, minutes=49, seconds=9, microseconds=120000), # Венера
+	dt.timedelta(days=365, hours=6, minutes=9, seconds=9, microseconds=504000), # Земля
+	dt.timedelta(days=686, hours=23, minutes=30, seconds=37, microseconds=440000), # Марс
+	dt.timedelta(days=4332, hours=19, minutes=40, seconds=56, microseconds=640000), # Юпитер
+	dt.timedelta(days=10755, hours=16, minutes=46, seconds=33, microseconds=600000), # Сатурн
+	dt.timedelta(days=30687, hours=3, minutes=40, seconds=19, microseconds=200000), # Уран
+	dt.timedelta(days=60190, hours=0, minutes=43, seconds=12, microseconds=0), # Нептун
+	dt.timedelta(days=90553, hours=0, minutes=28, seconds=48, microseconds=0) # Плутон
 ]
 
 #------------------------------

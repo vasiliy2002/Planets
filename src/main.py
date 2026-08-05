@@ -31,7 +31,8 @@ class MainWidget(Widget):
         super().__init__(**kwargs)
 
         self.mass_center = None
-
+        self.fps = config.FPS
+        self.time = config.START_DATE
         self.planets = list()
         max_radius = max(RADIUSES)
 
@@ -43,7 +44,7 @@ class MainWidget(Widget):
                 Color(*config.PLANET_COLOR)
                 planet_graphic = Ellipse(size=(config.PLANET_SIZE, config.PLANET_SIZE))
         
-            planet = Planet(MASSES[i], RADIUSES[i], PERIODS[i], (RADIUSES[i] / max_radius),
+            planet = Planet(self.time, MASSES[i], RADIUSES[i], PERIODS[i], (RADIUSES[i] / max_radius),
                                 orbit_graphic, planet_graphic, config.START_POS[i])
             self.planets.append(planet)
 
@@ -76,8 +77,11 @@ class MainWidget(Widget):
             self.mass_center.update_size(cx, cy, w, h, self.scale)
     
     def update_poses(self):
+        self.time += config.TIME_SEC / self.fps
+        #print(config.TIME_SEC / self.fps)
+
         for planet in self.planets:
-            planet.update_pos()
+            planet.update_pos(self.time)
 
         if self.mass_center:
             center_x, center_y, masses = utils.get_centers_and_masses(self.planets)
@@ -125,7 +129,10 @@ class MainWidget(Widget):
 
     def on_scale(self, instance, value):
         self.txt_input.text = str(value)
-        self.on_size(None, None)        
+        self.on_size(None, None)
+
+    def refresh_date(self, label):
+        label.text = self.time.strftime("%Y-%m-%d %H:%M")     
 
 class PlanetsApp(App):
     def build(self):
@@ -159,10 +166,16 @@ class PlanetsApp(App):
         scale_text.bind(text=mw.update_scale)
         #mw.bind(scale=mw.update_txt_input)
 
+        date_label = Label()
+
+        control_panel.add_widget(date_label)
         control_panel.add_widget(scale_layout)
         control_panel.add_widget(btn)
         
         Clock.schedule_interval(mw.update, 1.0/config.FPS)
+        update_label_date = lambda x: mw.refresh_date(date_label)
+        Clock.schedule_interval(update_label_date, 1.0/config.DATE_LABEL_REFRESH_RATE)
+
         return layout
 
 if __name__ == "__main__":
