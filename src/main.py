@@ -16,8 +16,7 @@ from kivy.properties import NumericProperty
 
 import config
 import utils
-
-# TODO: разделить логику обновления позиций и отрисовки
+import datetime as dt
 
 # Задание размеров окна
 Window.size = (config.WINDOW_WIDTH, config.WINDOW_HEIGHT)
@@ -30,7 +29,9 @@ class MainWidget(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+        self.cnt = 0
         self.mass_center = None
+        self.time_speed = config.TIME_SEC
         self.fps = config.FPS
         self.time = config.START_DATE
         self.planets = list()
@@ -77,7 +78,8 @@ class MainWidget(Widget):
             self.mass_center.update_size(cx, cy, w, h, self.scale)
     
     def update_poses(self):
-        self.time += config.TIME_SEC / self.fps
+        self.time += self.time_speed / self.fps
+        self.cnt += 1
         #print(config.TIME_SEC / self.fps)
 
         for planet in self.planets:
@@ -128,11 +130,32 @@ class MainWidget(Widget):
         self.scale = max(config.MIN_SCALE, min(value, config.MAX_SCALE))
 
     def on_scale(self, instance, value):
-        self.txt_input.text = str(value)
+        #self.txt_input.text = str(value)
         self.on_size(None, None)
 
     def refresh_date(self, label):
-        label.text = self.time.strftime("%Y-%m-%d %H:%M")     
+        label.text = self.time.strftime("%Y-%m-%d %H:%M")
+        self.cnt = 0
+
+    def change_speed(self, instance, k):
+        if self.time_speed == dt.timedelta(0):
+            self.time_speed = dt.timedelta(hours=1) if k > 1 else dt.timedelta(hours=-1)
+            self.pause_btn.text = "Пауза"
+            self.pause_btn.disabled = False
+            return
+
+        if self.time_speed < dt.timedelta(0):
+            k = 1 / k
+
+        self.time_speed *= k
+        if abs(self.time_speed) < dt.timedelta(hours=12):
+            self.time_speed = -dt.timedelta(hours=12) if self.time_speed > dt.timedelta(0) else dt.timedelta(hours=12) 
+
+    def pause(self, instance):
+        self.time_speed = dt.timedelta(0)
+        instance.text = "Движение планет прекращено"
+        instance.disabled = True
+
 
 class PlanetsApp(App):
     def build(self):
@@ -155,22 +178,43 @@ class PlanetsApp(App):
 
         scale_minus_btn = Button(text="-", font_size=16)
         scale_minus_btn.bind(on_press=lambda instance: mw.rescale(instance, 0.67))
-        scale_text = TextInput(text=str(config.SCALE))
+        #scale_text = TextInput(text=str(config.SCALE))
 
         scale_layout.add_widget(scale_label)
         scale_layout.add_widget(scale_plus_btn)
         scale_layout.add_widget(scale_minus_btn)
-        scale_layout.add_widget(scale_text)
+        #scale_layout.add_widget(scale_text)
 
-        mw.txt_input = scale_text
-        scale_text.bind(text=mw.update_scale)
+        speed_layout = BoxLayout(spacing=10)
+        speed_label = Label(text="Скорость:")
+
+        speed_plus_btn = Button(text="+", font_size=16)
+        speed_plus_btn.bind(on_press=lambda instance: mw.change_speed(instance, 1.5))
+
+        speed_minus_btn = Button(text="-", font_size=16)
+        speed_minus_btn.bind(on_press=lambda instance: mw.change_speed(instance, 0.67))
+
+        speed_layout.add_widget(speed_label)
+        speed_layout.add_widget(speed_plus_btn)
+        speed_layout.add_widget(speed_minus_btn)
+
+        pause_btn = Button(text="Пауза", font_size=16)
+        pause_btn.bind(on_press=mw.pause)
+        mw.pause_btn = pause_btn
+        #mw.txt_input = scale_text
+        #scale_text.bind(text=mw.update_scale)
         #mw.bind(scale=mw.update_txt_input)
 
-        date_label = Label()
-
-        control_panel.add_widget(date_label)
-        control_panel.add_widget(scale_layout)
+        date_label = Label(font_size=30)
+        #date_label_speed = Label(font_size=15, text="За секунду проходит: " + str(mw.time_speed), size_hint_y=0.1)
+        #mw.date_label_speed = date_label_speed
+        
         control_panel.add_widget(btn)
+        control_panel.add_widget(scale_layout)
+        control_panel.add_widget(speed_layout)
+        control_panel.add_widget(pause_btn)
+        control_panel.add_widget(date_label)
+        #control_panel.add_widget(date_label_speed)
         
         Clock.schedule_interval(mw.update, 1.0/config.FPS)
         update_label_date = lambda x: mw.refresh_date(date_label)
