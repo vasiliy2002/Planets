@@ -11,13 +11,6 @@ WINDOW_HEIGHT = 500
 # Ширина орбит [пиксели]
 ORBIT_LINEWIDTH = 1
 
-# Цвет орбит [rgba]
-ORBIT_COLOR = [0.2, 0.6, 0.8, 1.]
-
-# Цвет планет
-PLANET_COLOR = [1., 0.5, 0., 1.]
-
-MASS_CENTER_COLOR = [1., 0.41, 0.7]
 MASS_CENTER_SIZE = 12
 
 # Размер планет
@@ -40,6 +33,9 @@ TIME_SEC = dt.timedelta(days=90)
 DATE_LABEL_REFRESH_RATE = 2
 
 START_DATE = dt.datetime(2000, 1, 1, 12, 0)
+
+# Мультипликатор масштаба при управлении колесиком
+SCROLL_SCALE_VALUE = 1.2
 
 # Стартовые положения планет на орбитах [радианы]
 START_POS = [

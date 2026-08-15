@@ -1,4 +1,4 @@
-import config
+import configs.config as config
 import utils
 
 
@@ -22,13 +22,11 @@ class MassCenter:
 		self.line.append(self.pos)
 
 	def update_graphic(self, cx, cy, w, h, scale):
-		#scale = float(scale)
 		widget_coords = utils.coords2window(self.pos[0], self.pos[1], cx, cy, w, h, scale)
 		self.mass_center_graphic.pos = (widget_coords[0] - config.MASS_CENTER_SIZE/2, widget_coords[1] - config.MASS_CENTER_SIZE/2)
 		self.line_graphic.points += widget_coords
 
 	def update_size(self, cx, cy, w, h, scale):
-		#scale = float(scale)
 		widget_coords = utils.coords2window(self.pos[0], self.pos[1], cx, cy, w, h, scale)
 		self.mass_center_graphic.pos = (widget_coords[0] - config.MASS_CENTER_SIZE/2, widget_coords[1] - config.MASS_CENTER_SIZE/2)
 		

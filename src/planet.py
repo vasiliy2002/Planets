@@ -1,5 +1,5 @@
 import math
-import config
+import configs.config as config
 import utils
 
 
@@ -32,13 +32,11 @@ class Planet:
         return math.cos(self.pos) * self.orbit_size, math.sin(self.pos) * self.orbit_size 
 
     def update_graphic(self, cx, cy, w, h, scale):
-        #scale = float(scale)
         x, y = self.get_xy()
         widget_coords = utils.coords2window(x, y, cx, cy, w, h, scale)
         self.planet_graphic.pos = (widget_coords[0] - config.PLANET_SIZE/2, widget_coords[1] - config.PLANET_SIZE/2)        
 
     def update_size(self, cx, cy, w, h, scale):
-        #scale = float(scale)
         radius = min(w, h) * self.orbit_size * scale / 2
         self.orbit_graphic.circle = (cx, cy, radius)
         x, y = self.get_xy()
