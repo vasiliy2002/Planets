@@ -4,8 +4,10 @@ from kivy.clock import Clock
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 import configs.config as config
+import math
 from kivy.uix.dropdown import DropDown
 from styles import styles_dict
+from widgets import PlanetsPosesInfo
 
 
 def get_centers_and_masses(planets):
@@ -26,6 +28,18 @@ def coord2window(pos, c, size, scale):
 def coords2window(pos_x, pos_y, cx, cy, w, h, scale):
     size = min(w, h)        
     return (int(cx + pos_x * (size/2) * scale), int(cy + pos_y * (size/2) * scale))
+
+
+def build_canvas(mw):
+
+    earthx, earthy = mw.planets[2].get_real_xy()
+    planets_info = PlanetsPosesInfo(earthx, earthy, mw.planets, cols=3, col_default_width=150, row_default_height=30)
+
+    mw.add_widget(planets_info)
+    mw.planets_info = planets_info
+
+    update_planets_info = lambda x: mw.update_planets_info()
+    Clock.schedule_interval(update_planets_info, 1.0/2)
 
 def build_control_panel(control_panel, mw, change_color):
 
@@ -109,3 +123,8 @@ def build_control_panel(control_panel, mw, change_color):
     Clock.schedule_interval(update_label_date, 1.0/config.DATE_LABEL_REFRESH_RATE)
 
     Clock.schedule_once(lambda dt: change_color('Vintage NASA Blueprint'), 0.1)
+
+def get_dist(firstx, firsty, secondx, secondy):
+    return math.sqrt((firstx - secondx) ** 2 + (firsty - secondy) ** 2)
+
+

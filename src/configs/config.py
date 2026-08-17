@@ -1,6 +1,8 @@
 import datetime as dt
 import math
+from skyfield.api import load
 
+ts = load.timescale()
 
 # Конфигурационный файл
 
@@ -32,7 +34,7 @@ TIME_SEC = dt.timedelta(days=90)
 # Частота обновления надписи с текущим временем в секунду
 DATE_LABEL_REFRESH_RATE = 2
 
-START_DATE = dt.datetime(2000, 1, 1, 12, 0)
+START_DATE = ts.tt(2000, 1, 1, 12, 0) #dt.datetime(2000, 1, 1, 12, 0)
 
 # Мультипликатор масштаба при управлении колесиком
 SCROLL_SCALE_VALUE = 1.2

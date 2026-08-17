@@ -9,6 +9,8 @@ from consts import *
 from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import NumericProperty
 from styles import styles_dict
+from widgets import ControlPanel
+
 
 import configs.config as config
 import utils
@@ -51,7 +53,7 @@ class MainWidget(Widget):
                 self.planet_colors.append(Color(*theme['PLANETS_COLOR']))
                 planet_graphic = Ellipse(size=(config.PLANET_SIZE, config.PLANET_SIZE))
         
-            planet = Planet(self.time, MASSES[i], RADIUSES[i], PERIODS[i], (RADIUSES[i] / max_radius),
+            planet = Planet(PLANET_NAMES[i], self.time, MASSES[i], RADIUSES[i], PERIODS[i], (RADIUSES[i] / max_radius),
                                 orbit_graphic, planet_graphic, config.START_POS[i])
             self.planets.append(planet)
 
@@ -91,6 +93,9 @@ class MainWidget(Widget):
         cy = self.center_y
         w = self.width 
         h = self.height
+
+        self.planets_info.x = self.x
+        self.planets_info.top = self.top
         
         self.backgournd.pos = self.pos
         self.backgournd.size = self.size
@@ -102,6 +107,10 @@ class MainWidget(Widget):
             center_x, center_y, masses = utils.get_centers_and_masses(self.planets)
             self.mass_center.update_size(cx, cy, w, h, self.scale)
     
+    def update_planets_info(self):
+        earthx, earthy = self.planets[2].get_real_xy()
+        self.planets_info.update(earthx, earthy, self.planets)
+
     def update_poses(self):
         self.time += self.time_speed / self.fps
 
@@ -150,7 +159,7 @@ class MainWidget(Widget):
         self.on_size(None, None)
 
     def refresh_date(self, label):
-        label.text = self.time.strftime("%Y-%m-%d %H:%M")
+        label.text = self.time.utc_jpl()[:-12] 
 
     def change_speed(self, instance, k):
         if self.time_speed == dt.timedelta(0):
@@ -171,32 +180,6 @@ class MainWidget(Widget):
         instance.text = "Движение планет прекращено"
         instance.disabled = True
 
-class ControlPanel(BoxLayout):
-    def __init__(self, scheme='sci-fi', **kwargs):
-        super().__init__(**kwargs)
-        self.buttons = list()
-        self.labels = list()
-
-        theme = styles_dict[scheme]
-
-        with self.canvas.before:
-            self.bg_color = Color(*theme['CONTROL_PANEL_COLOR'])
-            self.backgournd = Rectangle(pos=(self.center_x, self.center_y), size=(self.width, self.height))
-
-    def on_size(self, instance, value):
-        self.backgournd.pos = self.pos
-        self.backgournd.size = self.size
-
-    def change_color(self, scheme='sci-fi'):
-        theme = styles_dict[scheme]
-        self.bg_color.rgba = theme['CONTROL_PANEL_COLOR']
-
-        for label in self.labels:
-            label.color = theme['TEXT_COLOR']
-
-        for btn in self.buttons:
-            btn.background_color = theme['BUTTONS_COLOR']
-            btn.color = theme['TEXT_COLOR']
 
 class PlanetsApp(App):
     def change_color_scheme(self, scheme):
@@ -211,6 +194,7 @@ class PlanetsApp(App):
         layout.add_widget(self.mw)
         layout.add_widget(self.control_panel)
 
+        utils.build_canvas(self.mw)
         utils.build_control_panel(self.control_panel, self.mw, self.change_color_scheme)
         self.change_color_scheme('sci-fi')
 

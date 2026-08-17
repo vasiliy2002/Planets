@@ -4,7 +4,8 @@ import utils
 
 
 class Planet:
-    def __init__(self, start_time, mass, radius, period, orbit_size, orbit_graphic, planet_graphic, pos):
+    def __init__(self, name, start_time, mass, radius, period, orbit_size, orbit_graphic, planet_graphic, pos):
+        self.name = name
         self.mass = mass
 
         self.start_time = start_time
@@ -26,10 +27,15 @@ class Planet:
 
 
     def update_pos(self, t):
-        self.pos = ( (t - self.start_time) % self.period ) / self.period * 2 * math.pi + self.start_pos
+        period = self.period.total_seconds() / 86400
+        self.pos = ( (t - self.start_time) % period ) / period * 2 * math.pi + self.start_pos
+        self.pos = self.pos % (2 * math.pi)
     
     def get_xy(self):
         return math.cos(self.pos) * self.orbit_size, math.sin(self.pos) * self.orbit_size 
+
+    def get_real_xy(self):
+        return math.cos(self.pos) * self.radius, math.sin(self.pos) * self.radius
 
     def update_graphic(self, cx, cy, w, h, scale):
         x, y = self.get_xy()

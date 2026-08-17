@@ -14,7 +14,7 @@ RADIUSES = [
 	9.58, # Сатурн
 	19.19, # Уран
 	30.1, # Нептун
-	39.48 # Плутон
+	#39.48 # Плутон
 ]
 
 #-----------------------------
@@ -30,7 +30,7 @@ PERIODS = [
 	dt.timedelta(days=10755, hours=16, minutes=46, seconds=33, microseconds=600000), # Сатурн
 	dt.timedelta(days=30687, hours=3, minutes=40, seconds=19, microseconds=200000), # Уран
 	dt.timedelta(days=60190, hours=0, minutes=43, seconds=12, microseconds=0), # Нептун
-	dt.timedelta(days=90553, hours=0, minutes=28, seconds=48, microseconds=0) # Плутон
+	#dt.timedelta(days=90553, hours=0, minutes=28, seconds=48, microseconds=0) # Плутон
 ]
 
 #------------------------------
@@ -46,8 +46,20 @@ MASSES = [
 	56.846, # Сатурн
 	8.681, # Уран
 	10.24, # Нептун
-	0.001 # Плутон	
+	#0.001 # Плутон	
 ]
 
 #-------------------------------
 
+#-------------------------------
+PLANET_NAMES = [
+	'Меркурий',
+	'Венера',
+	'Земля',
+	'Марс',
+	'Юпитер',
+	'Сатурн',
+	'Уран',
+	'Нептун'
+]
+#-------------------------------
