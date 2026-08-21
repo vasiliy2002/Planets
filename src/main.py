@@ -34,6 +34,7 @@ class MainWidget(Widget):
         self.mass_center = None
         self.time_speed = config.TIME_SEC
         self.fps = config.FPS
+        self.root_time = config.ROOT_DATE
         self.time = config.START_DATE
         self.planets = list()
         self.mass_center_color = None
@@ -46,14 +47,14 @@ class MainWidget(Widget):
         
         for i in range(len(RADIUSES)):
 
-            with self.canvas:
+            with self.canvas.before:
                 self.orbit_colors.append(Color(*theme['ORBITS_COLOR']))
                 orbit_graphic = Line(circle=(self.width/2, self.height/2, 1), width=config.ORBIT_LINEWIDTH)
 
                 self.planet_colors.append(Color(*theme['PLANETS_COLOR']))
                 planet_graphic = Ellipse(size=(config.PLANET_SIZE, config.PLANET_SIZE))
         
-            planet = Planet(PLANET_NAMES[i], self.time, MASSES[i], RADIUSES[i], PERIODS[i], (RADIUSES[i] / max_radius),
+            planet = Planet(PLANET_NAMES[i], self.root_time, MASSES[i], RADIUSES[i], PERIODS[i], (RADIUSES[i] / max_radius),
                                 orbit_graphic, planet_graphic, config.START_POS[i])
             self.planets.append(planet)
 
@@ -74,13 +75,13 @@ class MainWidget(Widget):
 
     def draw_mass_center(self, instance):
         if self.mass_center:
-            self.canvas.remove(self.mass_center.mass_center_graphic)
-            self.canvas.remove(self.mass_center.line_graphic)
+            self.canvas.before.remove(self.mass_center.mass_center_graphic)
+            self.canvas.before.remove(self.mass_center.line_graphic)
             self.mass_center = None
             self.mass_center_color = None
             instance.text = "Центр масс"
         else:
-            with self.canvas:
+            with self.canvas.before:
                 self.mass_center_color = Color(*self.mass_center_c)
                 mass_center_graphic = Ellipse(size=(config.PLANET_SIZE, config.PLANET_SIZE))
                 line_graphic = Line(width=config.MASS_CENTER_LINEWIDTH)

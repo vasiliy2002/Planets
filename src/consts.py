@@ -63,3 +63,8 @@ PLANET_NAMES = [
 	'Нептун'
 ]
 #-------------------------------
+
+#-------------------------------
+PLANET_NAMES_ENG = planet_names = ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"]
+
+#-------------------------------
