@@ -93,6 +93,8 @@ class ControlPanel(BoxLayout):
         self.backgournd.pos = self.pos
         self.backgournd.size = self.size
 
+        self.labels[-1].text_size = (self.width, None)
+
     def change_color(self, scheme='sci-fi'):
         theme = styles_dict[scheme]
         self.bg_color.rgba = theme['CONTROL_PANEL_COLOR']

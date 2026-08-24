@@ -15,6 +15,9 @@ from widgets import ControlPanel
 import configs.config as config
 import utils
 import datetime as dt
+from skyfield.api import load
+
+ts = load.timescale()
 
 # Задание размеров окна
 Window.size = (config.WINDOW_WIDTH, config.WINDOW_HEIGHT)
@@ -180,6 +183,17 @@ class MainWidget(Widget):
         self.time_speed = dt.timedelta(0)
         instance.text = "Движение планет прекращено"
         instance.disabled = True
+
+    def set_date(self, date_input, pause_btn):
+        date = date_input.text
+        
+        if not utils.verify_date(date):
+            date_input.text = "Неверный формат даты"
+            return
+
+        year, month, day = utils.parse_date(date)
+        self.time = ts.utc(year, month, day)
+        self.pause(pause_btn)
 
 
 class PlanetsApp(App):

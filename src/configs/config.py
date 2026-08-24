@@ -34,7 +34,7 @@ TIME_SEC = dt.timedelta(days=90)
 # Частота обновления надписи с текущим временем в секунду
 DATE_LABEL_REFRESH_RATE = 2
 
-START_DATE = ts.utc(0, 1, 1, 12, 0) #dt.datetime(2000, 1, 1, 12, 0)
+START_DATE = ts.utc(2000, 1, 1, 12, 0) #dt.datetime(2000, 1, 1, 12, 0)
 ROOT_DATE = ts.utc(2000, 1, 1, 0, 0)
 
 # Мультипликатор масштаба при управлении колесиком

@@ -6,9 +6,28 @@ from kivy.uix.label import Label
 import configs.config as config
 import math
 from kivy.uix.dropdown import DropDown
+from kivy.uix.textinput import TextInput
 from styles import styles_dict
 from widgets import PlanetsPosesInfo
+import re
 
+
+def verify_date(date_string):
+    # 1. Check the general format using Regex
+    # Matches 'A.D. ' or 'B.C. ' followed by 1-4 digit year, 1-2 digit month, and 1-2 digit day
+    pattern = r"^(A\.D\.|B\.C\.) \d{1,6}-\d{1,2}-\d{1,2}$"
+    
+    if not re.match(pattern, date_string):
+        return False
+    return True
+
+def parse_date(date_string):
+    era = date_string[:4]
+    era = 1 if era == "A.D." else -1
+    year, month, day = [int(x) for x in date_string[5:].split("-")]
+    if era < 0:
+        year = -year + 1
+    return year, month, day
 
 def get_centers_and_masses(planets):
     center_x, center_y = list(), list()
@@ -98,6 +117,17 @@ def build_control_panel(control_panel, mw, change_color):
     speed_layout.add_widget(speed_plus_btn)
     speed_layout.add_widget(speed_minus_btn)
 
+    # Ввод даты
+    date_enter_label = Label(text="Ввод даты в формате: B.C./A.D. год-номер месяца-номер дня", halign='center')
+
+    date_enter_layout = BoxLayout(spacing=10)
+    date_input = TextInput()
+    date_enter_button = Button(text="Установить дату", font_size=16)
+    date_enter_button.bind(on_release=lambda btn: mw.set_date(date_input, pause_btn))
+    
+    date_enter_layout.add_widget(date_input)
+    date_enter_layout.add_widget(date_enter_button)
+
     # Пауза
     pause_btn = Button(text="Пауза", font_size=16)
     pause_btn.bind(on_press=mw.pause)
@@ -110,13 +140,16 @@ def build_control_panel(control_panel, mw, change_color):
     control_panel.add_widget(btn)
     control_panel.add_widget(scale_layout)
     control_panel.add_widget(speed_layout)
+    control_panel.add_widget(date_enter_label)
+    control_panel.add_widget(date_enter_layout)
     control_panel.add_widget(pause_btn)
     control_panel.add_widget(date_label)
 
+
     control_panel.buttons += dropdown_buttons
     control_panel.buttons += [btn, scale_plus_btn, scale_minus_btn, speed_plus_btn,
-                                speed_minus_btn, pause_btn]
-    control_panel.labels += [scale_label, speed_label, date_label, theme_label]
+                                speed_minus_btn, pause_btn, date_enter_button]
+    control_panel.labels += [scale_label, speed_label, date_label, theme_label, date_enter_label]
 
     Clock.schedule_interval(mw.update, 1.0/config.FPS)
     update_label_date = lambda x: mw.refresh_date(date_label)
