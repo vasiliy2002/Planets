@@ -27,7 +27,7 @@ class MainWidget(Widget):
     scale = NumericProperty(config.SCALE, min=0.01, max=300)
 
 
-    def __init__(self, style='sci-fi', **kwargs):
+    def __init__(self, style='Vintage NASA Blueprint', **kwargs):
         super().__init__(**kwargs)
 
         theme = styles_dict[style]
@@ -48,6 +48,10 @@ class MainWidget(Widget):
             self.bg_color = Color(*theme['SPACE_COLOR'])
             self.backgournd = Rectangle(pos=(self.center_x, self.center_y), size=(self.width, self.height))
         
+        with self.canvas.before:
+            self.sun_color = Color(*theme['SUN_COLOR'])
+            self.sun_graphic = Ellipse(size=(config.PLANET_SIZE*2, config.PLANET_SIZE*2))
+
         for i in range(len(RADIUSES)):
 
             with self.canvas.before:
@@ -63,6 +67,8 @@ class MainWidget(Widget):
 
     def change_color(self, scheme):
         theme = styles_dict[scheme]
+
+        self.sun_color = theme['SUN_COLOR']
         self.bg_color.rgba = theme['SPACE_COLOR']
 
         for c in self.orbit_colors:
@@ -103,6 +109,8 @@ class MainWidget(Widget):
         
         self.backgournd.pos = self.pos
         self.backgournd.size = self.size
+
+        self.sun_graphic.pos = (w // 2 - config.PLANET_SIZE, h // 2 - config.PLANET_SIZE)
 
         for planet in self.planets:
             planet.update_size(cx, cy, w, h, self.scale)
@@ -167,7 +175,7 @@ class MainWidget(Widget):
 
     def change_speed(self, instance, k):
         if self.time_speed == dt.timedelta(0):
-            self.time_speed = dt.timedelta(hours=2) if k > 1 else dt.timedelta(hours=-2)
+            self.time_speed = dt.timedelta(hours=12) if k > 1 else dt.timedelta(hours=-12)
             self.pause_btn.text = "Пауза"
             self.pause_btn.disabled = False
             return
@@ -184,8 +192,9 @@ class MainWidget(Widget):
         instance.text = "Движение планет прекращено"
         instance.disabled = True
 
-    def set_date(self, date_input, pause_btn):
+    def set_date(self, date_input, pause_btn, date_dropdown_btn):
         date = date_input.text
+        date = date_dropdown_btn.text + " " + date
         
         if not utils.verify_date(date):
             date_input.text = "Неверный формат даты"
@@ -204,14 +213,14 @@ class PlanetsApp(App):
     def build(self):
         layout = BoxLayout()
         self.mw = MainWidget()
-        self.control_panel = ControlPanel(spacing=10, orientation='vertical', size_hint_x=0.25)
+        self.control_panel = ControlPanel(spacing=10, orientation='horizontal', size_hint_x=0.35)
 
         layout.add_widget(self.mw)
         layout.add_widget(self.control_panel)
 
         utils.build_canvas(self.mw)
         utils.build_control_panel(self.control_panel, self.mw, self.change_color_scheme)
-        self.change_color_scheme('sci-fi')
+        self.change_color_scheme('Vintage NASA Blueprint')
 
         return layout
 

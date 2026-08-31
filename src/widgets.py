@@ -3,9 +3,27 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.graphics import Color, Rectangle
 from styles import styles_dict
+from kivy.uix.textinput import TextInput
 
 import utils
 import math
+
+class AddTrack(BoxLayout):
+    def __init__(self, scheme='sci-fi', **kwargs):
+        super().__init__(**kwargs)
+        
+        self.name_layout = BoxLayout(spacing=10)
+        self.object_name_label = Label(text="Название")
+        self.text_input = TextInput()
+
+        self.name_layout.add_widget(self.object_name_label)
+        self.name_layout.add_widget(self.text_input)
+
+        self.add_widget(self.name_layout)
+
+        self.type_layout = BoxLayout(spacing=10)
+        self.type_label = Label(text="Тип")
+        
 
 
 class PlanetsPosesInfo(GridLayout):
