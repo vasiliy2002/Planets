@@ -16,6 +16,9 @@ import configs.config as config
 import utils
 import datetime as dt
 from skyfield.api import load
+from kepler_planet import KeplerPlanet
+import math
+from kivy.graphics import PushMatrix, PopMatrix, Rotate
 
 ts = load.timescale()
 
@@ -52,6 +55,7 @@ class MainWidget(Widget):
             self.sun_color = Color(*theme['SUN_COLOR'])
             self.sun_graphic = Ellipse(size=(config.PLANET_SIZE*2, config.PLANET_SIZE*2))
 
+        
         for i in range(len(RADIUSES)):
 
             with self.canvas.before:
@@ -63,7 +67,9 @@ class MainWidget(Widget):
         
             planet = Planet(PLANET_NAMES[i], self.root_time, MASSES[i], RADIUSES[i], PERIODS[i], (RADIUSES[i] / max_radius),
                                 orbit_graphic, planet_graphic, config.START_POS[i])
-            self.planets.append(planet)
+            self.planets.append(planet)          
+
+
 
     def change_color(self, scheme):
         theme = styles_dict[scheme]
@@ -99,6 +105,22 @@ class MainWidget(Widget):
             instance.text = "Стереть"
 
     def on_size(self, instance, value):
+
+        
+        with self.canvas.before:
+            #self.orbit_colors.append(Color(*theme['ORBITS_COLOR']))
+            PushMatrix()
+
+            Rotate(angle=170, axis=(0, 0, 1), origin=(self.width/2, self.height/2))
+            Color(0.5, 0.5, 0.5, 1)
+            
+            a = 200
+            e = 0.85
+            c = a * e
+            b = a * math.sqrt(1 - e ** 2)
+            
+            Line(ellipse=(self.width/2-c-b, self.height/2-b, 2*a, 2*b), width=1)
+            PopMatrix()  
         cx = self.center_x
         cy = self.center_y
         w = self.width 

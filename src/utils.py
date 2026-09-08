@@ -4,9 +4,49 @@ from kivy.clock import Clock
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 import configs.config as config
+import math
 from kivy.uix.dropdown import DropDown
+from kivy.uix.textinput import TextInput
 from styles import styles_dict
+from widgets import PlanetsPosesInfo, AddTrack
+from kivy.uix.popup import Popup
+import re
+import scipy
 
+def kepler_eq(E, M, e):
+  return E - e * math.sin(E) - M
+
+def get_phita(e, E):
+  x = math.sqrt((1+e)/(1-e)) * math.tan(E/2)
+  return 2 * math.atan2(x, 1)
+
+def get_pos(a, e, P, t):
+  n = 2 * math.pi / P
+  M = n * t
+  E0 = M if e <= 0.8 else math.pi
+  E = scipy.optimize.newton(lambda x: kepler_eq(x, M, e), E0)
+
+  phita = get_phita(e, E)
+  r = a * (1 - e * math.cos(E))
+
+  return r, phita
+
+def verify_date(date_string):
+    # 1. Check the general format using Regex
+    # Matches 'A.D. ' or 'B.C. ' followed by 1-4 digit year, 1-2 digit month, and 1-2 digit day
+    pattern = r"^(A\.D\.|B\.C\.) \d{1,6}-\d{1,2}-\d{1,2}$"
+    
+    if not re.match(pattern, date_string):
+        return False
+    return True
+
+def parse_date(date_string):
+    era = date_string[:4]
+    era = 1 if era == "A.D." else -1
+    year, month, day = [int(x) for x in date_string[5:].split("-")]
+    if era < 0:
+        year = -year + 1
+    return year, month, day
 
 def get_centers_and_masses(planets):
     center_x, center_y = list(), list()
@@ -27,12 +67,45 @@ def coords2window(pos_x, pos_y, cx, cy, w, h, scale):
     size = min(w, h)        
     return (int(cx + pos_x * (size/2) * scale), int(cy + pos_y * (size/2) * scale))
 
-def build_control_panel(control_panel, mw, change_color):
 
-    theme_layout = BoxLayout(spacing=10)
-    theme_label = Label(text="Цветовая тема:")
+def build_canvas(mw):
+
+    earthx, earthy = mw.planets[2].get_real_xy()
+    planets_info = PlanetsPosesInfo(earthx, earthy, mw.planets, cols=3, col_default_width=150, row_default_height=30)
+
+    mw.add_widget(planets_info)
+    mw.planets_info = planets_info
+
+    update_planets_info = lambda x: mw.update_planets_info()
+    Clock.schedule_interval(update_planets_info, 1.0/2)
+
+def add_track(mw):
+    popup = Popup(title='Новый объект', content=AddTrack(), size_hint=(0.3, 0.6))
+    popup.open()
+
+def build_control_panel(control_panel, mw, change_color):
+    left_space, right_space = BoxLayout(spacing=10, orientation='vertical'), BoxLayout(spacing=10, orientation='vertical', size_hint_x=0.5)
+    control_panel.add_widget(left_space)
+    #control_panel.add_widget(right_space)
+
+    # Построение правой стороны панели управления
+    add_track_layout = BoxLayout(spacing=10)
+    track_label = Label(text="Отслеживаемые объекты")
+    add_track_button = Button(text="+", font_size=16, size_hint_x=0.3)
+    add_track_button.bind(on_press=lambda instance: add_track(mw))
+
+    add_track_layout.add_widget(track_label)
+    add_track_layout.add_widget(add_track_button)
+
+    right_space.add_widget(add_track_layout)
+    #----------------------------------------------------
+
+    # Построение левой стороны панели управления
 
     # Выбор цветовой темы
+    theme_layout = BoxLayout(spacing=10)
+    theme_label = Label(text="Цветовая тема:")
+    
     dropdown = DropDown()
     dropdown_buttons = list()
     
@@ -84,6 +157,32 @@ def build_control_panel(control_panel, mw, change_color):
     speed_layout.add_widget(speed_plus_btn)
     speed_layout.add_widget(speed_minus_btn)
 
+    # Ввод даты
+
+    date_dropdown = DropDown()
+    ad_button, bc_button = Button(text="A.D.", size_hint_y=None), Button(text="B.C.", size_hint_y=None)
+    
+    ad_button.bind(on_release=lambda btn: date_dropdown.select(btn.text))
+    bc_button.bind(on_release=lambda btn: date_dropdown.select(btn.text))
+
+    date_dropdown.add_widget(bc_button)
+    date_dropdown.add_widget(ad_button)
+
+    date_dropdown_button = Button(text='A.D.')
+    date_dropdown_button.bind(on_release=date_dropdown.open)
+    date_dropdown.bind(on_select=lambda instance, x: setattr(date_dropdown_button, 'text', x))
+
+    date_enter_label = Label(text="Ввод даты в формате: B.C./A.D. год-номер месяца-номер дня", halign='center')
+
+    date_enter_layout = BoxLayout(spacing=10)
+    date_input = TextInput()
+    date_enter_button = Button(text="Установить дату", font_size=16)
+    date_enter_button.bind(on_release=lambda btn: mw.set_date(date_input, pause_btn, date_dropdown_button))
+    
+    date_enter_layout.add_widget(date_dropdown_button)
+    date_enter_layout.add_widget(date_input)
+    date_enter_layout.add_widget(date_enter_button)
+
     # Пауза
     pause_btn = Button(text="Пауза", font_size=16)
     pause_btn.bind(on_press=mw.pause)
@@ -92,20 +191,30 @@ def build_control_panel(control_panel, mw, change_color):
     # Метка с датой
     date_label = Label(font_size=30)
 
-    control_panel.add_widget(theme_layout)
-    control_panel.add_widget(btn)
-    control_panel.add_widget(scale_layout)
-    control_panel.add_widget(speed_layout)
-    control_panel.add_widget(pause_btn)
-    control_panel.add_widget(date_label)
+    left_space.add_widget(theme_layout)
+    left_space.add_widget(btn)
+    left_space.add_widget(scale_layout)
+    left_space.add_widget(speed_layout)
+    left_space.add_widget(pause_btn)
+    left_space.add_widget(date_enter_label)
+    left_space.add_widget(date_enter_layout)
+    left_space.add_widget(date_label)
+
+    #--------------------------------------
+
 
     control_panel.buttons += dropdown_buttons
-    control_panel.buttons += [btn, scale_plus_btn, scale_minus_btn, speed_plus_btn,
-                                speed_minus_btn, pause_btn]
-    control_panel.labels += [scale_label, speed_label, date_label, theme_label]
+    control_panel.buttons += [ad_button, bc_button, date_dropdown_button, btn, scale_plus_btn, scale_minus_btn, speed_plus_btn,
+                                speed_minus_btn, pause_btn, date_enter_button, add_track_button]
+    control_panel.labels += [track_label, scale_label, speed_label, date_label, theme_label, date_enter_label]
 
     Clock.schedule_interval(mw.update, 1.0/config.FPS)
     update_label_date = lambda x: mw.refresh_date(date_label)
     Clock.schedule_interval(update_label_date, 1.0/config.DATE_LABEL_REFRESH_RATE)
 
     Clock.schedule_once(lambda dt: change_color('Vintage NASA Blueprint'), 0.1)
+
+def get_dist(firstx, firsty, secondx, secondy):
+    return math.sqrt((firstx - secondx) ** 2 + (firsty - secondy) ** 2)
+
+

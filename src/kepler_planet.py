@@ -3,39 +3,35 @@ import configs.config as config
 import utils
 
 
-class Planet:
-    def __init__(self, name, start_time, mass, radius, period, orbit_size, orbit_graphic, planet_graphic, pos):
+class KeplerPlanet:
+    def __init__(self, name, mass, period, start_angle, perihelion_time, eccentricity, a, orbit_graphic, planet_graphic):
         self.name = name
         self.mass = mass
 
-        self.start_time = start_time
-
-        # Значения радиуса и периода из consts.py
-        self.radius = radius
         self.period = period
-
-        # Радиус орбиты (нормализован)
-        self.orbit_size = orbit_size
+        self.start_angle = start_angle
+        self.perihelion_time = perihelion_time
+        self.eccentricity = eccentricity
+        self.a = a
 
         # Графический объект орбиты и планеты
         self.orbit_graphic = orbit_graphic
         self.planet_graphic = planet_graphic
 
-        # Позиция из config.py
-        self.pos = pos
-        self.start_pos = pos
-
+        self.polar_coords = (0, 0) 
 
     def update_pos(self, t):
         period = self.period.total_seconds() / 86400
-        self.pos = ( (t - self.start_time) % period ) / period * 2 * math.pi + self.start_pos
-        self.pos = self.pos % (2 * math.pi)
+        time_since_perihelion = (t - self.perihelion_time) % period
+        self.polar_coords = utils.get_pos(self.a, self.eccentricity, period, time_since_perihelion)
     
     def get_xy(self):
-        return math.cos(self.pos) * self.orbit_size, math.sin(self.pos) * self.orbit_size 
+        r, phi = self.polar_coords
+        return math.cos(phi) * r, math.sin(phi) * r 
 
     def get_real_xy(self):
-        return math.cos(self.pos) * self.radius, math.sin(self.pos) * self.radius
+        r, phi = self.polar_coords
+        return math.cos(phi) * r, math.sin(phi) * r 
 
     def update_graphic(self, cx, cy, w, h, scale):
         x, y = self.get_xy()
@@ -48,4 +44,5 @@ class Planet:
         x, y = self.get_xy()
         widget_coords = utils.coords2window(x, y, cx, cy, w, h, scale)
         self.planet_graphic.pos = (widget_coords[0] - config.PLANET_SIZE/2, widget_coords[1] - config.PLANET_SIZE/2)
+
 
