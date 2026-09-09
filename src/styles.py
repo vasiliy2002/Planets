@@ -9,7 +9,7 @@ styles_dict = {
 		'CONTROL_PANEL_COLOR': [0.07, 0.1, 0.15, 1.0],
 		'BUTTONS_COLOR': [0.13, 0.18, 0.27, 1.0],
 		'TEXT_COLOR': [0.9, 0.95, 1.0, 1.0],
-		'SUN_COLOR': [1., 1., 0., 1.]
+		'SUN_COLOR': [0.9, 0.9, 0, 1.]
 	},
 
 	'Cyberpunk Neon': {
@@ -20,7 +20,7 @@ styles_dict = {
 		'CONTROL_PANEL_COLOR': [0.07, 0.02, 0.1, 1.0],
 		'BUTTONS_COLOR': [0.15, 0.05, 0.22, 1.0],
 		'TEXT_COLOR': [0.0, 1.0, 1.0, 1.0],
-		'SUN_COLOR': [1., 1., 0., 1.]
+		'SUN_COLOR': [0.9, 0.9, 0, 1.]
 	},
 
 	'Vintage NASA Blueprint': {
@@ -31,7 +31,7 @@ styles_dict = {
 		'CONTROL_PANEL_COLOR': [0.08, 0.11, 0.11, 1.0],
 		'BUTTONS_COLOR': [0.15, 0.2, 0.2, 1.0],
 		'TEXT_COLOR': [0.95, 0.85, 0.7, 1.0],
-		'SUN_COLOR': [1., 1., 0., 1.]
+		'SUN_COLOR': [0.9, 0.9, 0, 1.]
 	},
 
 	'Solar Flare Minimal': {
@@ -42,7 +42,7 @@ styles_dict = {
 		'CONTROL_PANEL_COLOR': [0.1, 0.1, 0.13, 1.0],
 		'BUTTONS_COLOR': [0.16, 0.16, 0.2, 1.0],
 		'TEXT_COLOR': [1.0, 0.73, 0.2, 1.0],
-		'SUN_COLOR': [1., 1., 0., 1.]
+		'SUN_COLOR': [0.9, 0.9, 0, 1.]
 	},
 
 	'Ancient Classical': {
@@ -53,7 +53,7 @@ styles_dict = {
 		'CONTROL_PANEL_COLOR': [0.94, 0.91, 0.84, 0.90],
 		'BUTTONS_COLOR': [0.80, 0.66, 0.36, 1.0],
 		'TEXT_COLOR': [0.16, 0.12, 0.08, 1.0],
-		'SUN_COLOR': [1., 1., 0., 1.]
+		'SUN_COLOR': [0.9, 0.9, 0, 1.]
 	},
 
 	'Roman Imperial Elite': {
@@ -64,7 +64,7 @@ styles_dict = {
 		'CONTROL_PANEL_COLOR': [0.24, 0.04, 0.12, 0.90],
 		'BUTTONS_COLOR': [0.70, 0.53, 0.05, 1.0],
 		'TEXT_COLOR': [0.98, 0.97, 0.92, 1.0],
-		'SUN_COLOR': [1., 1., 0., 1.]
+		'SUN_COLOR': [0.9, 0.9, 0, 1.]
 	},
 	
 	'Military Tech Wermacht': {
@@ -75,7 +75,7 @@ styles_dict = {
 		'CONTROL_PANEL_COLOR': [0.18, 0.20, 0.21, 0.95],
 		'BUTTONS_COLOR': [0.28, 0.33, 0.28, 1.0],
 		'TEXT_COLOR': [0.92, 0.92, 0.88, 1.0],
-		'SUN_COLOR': [1., 1., 0., 1.]
+		'SUN_COLOR': [0.9, 0.9, 0, 1.]
 	},
 
 	'Galaxy Far, Far Away': {
@@ -86,7 +86,7 @@ styles_dict = {
 		'CONTROL_PANEL_COLOR': [0.14, 0.15, 0.17, 0.95],
 		'BUTTONS_COLOR': [0.08, 0.10, 0.12, 1.0],
 		'TEXT_COLOR': [0.30, 0.75, 1.00, 1.0],
-		'SUN_COLOR': [1., 1., 0., 1.]
+		'SUN_COLOR': [0.9, 0.9, 0, 1.]
 	},
 
 	'Napoleonic Grand Empire': {
@@ -97,7 +97,7 @@ styles_dict = {
 		'CONTROL_PANEL_COLOR': [0.96, 0.93, 0.85, 0.95],
 		'BUTTONS_COLOR': [0.85, 0.68, 0.23, 1.0],
 		'TEXT_COLOR': [0.08, 0.12, 0.22, 1.0],
-		'SUN_COLOR': [1., 1., 0., 1.]
+		'SUN_COLOR': [0.9, 0.9, 0, 1.]
 	},
 
 	'Matrix Terminal': {
@@ -108,6 +108,6 @@ styles_dict = {
 		'CONTROL_PANEL_COLOR': [0.02, 0.04, 0.02, 0.90],
 		'BUTTONS_COLOR': [0.00, 0.25, 0.05, 1.0],
 		'TEXT_COLOR': [0.00, 1.00, 0.20, 1.0],
-		'SUN_COLOR': [1., 1., 0., 1.]
+		'SUN_COLOR': [0.9, 0.9, 0, 1.]
 	}
 }

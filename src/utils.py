@@ -11,7 +11,7 @@ from styles import styles_dict
 from widgets import PlanetsPosesInfo, AddTrack
 from kivy.uix.popup import Popup
 import re
-import scipy
+from scipy import optimize
 
 def kepler_eq(E, M, e):
   return E - e * math.sin(E) - M
@@ -24,7 +24,7 @@ def get_pos(a, e, P, t):
   n = 2 * math.pi / P
   M = n * t
   E0 = M if e <= 0.8 else math.pi
-  E = scipy.optimize.newton(lambda x: kepler_eq(x, M, e), E0)
+  E = optimize.newton(lambda x: kepler_eq(x, M, e), E0)
 
   phita = get_phita(e, E)
   r = a * (1 - e * math.cos(E))
@@ -61,16 +61,15 @@ def get_centers_and_masses(planets):
     return center_x, center_y, mass
 
 def coord2window(pos, c, size, scale):
-    return c + pos * (size/2) * scale
+    return c + pos * scale
 
 def coords2window(pos_x, pos_y, cx, cy, w, h, scale):
-    size = min(w, h)        
-    return (int(cx + pos_x * (size/2) * scale), int(cy + pos_y * (size/2) * scale))
+    return (int(cx + pos_x*scale), int(cy + pos_y*scale))
 
 
 def build_canvas(mw):
 
-    earthx, earthy = mw.planets[2].get_real_xy()
+    earthx, earthy = mw.planets[2].get_xy()
     planets_info = PlanetsPosesInfo(earthx, earthy, mw.planets, cols=3, col_default_width=150, row_default_height=30)
 
     mw.add_widget(planets_info)

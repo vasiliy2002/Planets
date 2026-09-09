@@ -31,17 +31,18 @@ class PlanetsPosesInfo(GridLayout):
         super().__init__(**kwargs)    
         self.add_widget(Label(text='Объект'))
         self.add_widget(Label(text='Градус'))
-        self.add_widget(Label(text='Расстояние от Земли (а. е.)'))
+        self.add_widget(Label(text='Расстояние от Земли (км)'))
 
         self.graduses, self.dists = list(), list()
 
         for planet in planets:
             self.add_widget(Label(text=planet.name))
-            gradus = Label(text=str(round(planet.pos/math.pi * 180, 2)))
+            angle = (planet.polar_coords[1]/math.pi * 180 + planet.start_angle + 360) % 360
+            gradus = Label(text=str(round(angle, 2)))
             self.add_widget(gradus)
             self.graduses.append(gradus)
 
-            planetx, planety = planet.get_real_xy()
+            planetx, planety = planet.get_xy()
             dist = utils.get_dist(earthx, earthy, planetx, planety)
             dist_label = Label(text=str(round(dist, 2)))
             self.add_widget(dist_label)
@@ -62,7 +63,7 @@ class PlanetsPosesInfo(GridLayout):
         x, y = 0, 0
         sum_mass = 0
         for planet in planets:
-            px, py = planet.get_real_xy()
+            px, py = planet.get_xy()
             x += px * planet.mass
             y += py * planet.mass
             sum_mass += planet.mass
@@ -82,9 +83,10 @@ class PlanetsPosesInfo(GridLayout):
 
     def update(self, earthx, earthy, planets):
         for i, planet in enumerate(planets):
-            self.graduses[i].text = str(round(planet.pos/math.pi * 180, 2))
+            angle = (planet.polar_coords[1]/math.pi * 180 + planet.start_angle + 360) % 360
+            self.graduses[i].text = str(round(angle, 2))
 
-            planetx, planety = planet.get_real_xy()
+            planetx, planety = planet.get_xy()
             dist = utils.get_dist(earthx, earthy, planetx, planety)
             self.dists[i].text = str(round(dist, 2))
         
