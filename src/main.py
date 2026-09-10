@@ -51,6 +51,8 @@ class MainWidget(Widget):
         with self.canvas.before:
             self.sun_color = Color(*theme['SUN_COLOR'])
             self.sun_graphic = Ellipse(size=(config.PLANET_SIZE*2, config.PLANET_SIZE*2))
+            Color(1.0, 0, 0, 1.0)
+            self.dot = Ellipse(size=(6, 6))
 
         for i in range(len(RADIUSES)):
 
@@ -111,7 +113,8 @@ class MainWidget(Widget):
         self.backgournd.size = self.size
 
         self.sun_graphic.pos = (w // 2 - config.PLANET_SIZE, h // 2 - config.PLANET_SIZE)
-
+        self.dot.pos = (w//2 - 3, h//2 - 3)
+        
         for planet in self.planets:
             planet.update_size(cx, cy, w, h, self.scale)
 
