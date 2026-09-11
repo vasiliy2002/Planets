@@ -55,6 +55,8 @@ class MainWidget(Widget):
         with self.canvas.before:
             self.sun_color = Color(*theme['SUN_COLOR'])
             self.sun_graphic = Ellipse(size=(config.PLANET_SIZE*2, config.PLANET_SIZE*2))
+
+        with self.canvas:
             Color(1.0, 0, 0, 1.0)
             self.dot = Ellipse(size=(6, 6))
 

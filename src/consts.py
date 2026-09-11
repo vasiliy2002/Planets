@@ -99,6 +99,6 @@ PLANET_NAMES = [
 #-------------------------------
 
 #-------------------------------
-PLANET_NAMES_ENG = planet_names = ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"]
+PLANET_NAMES_ENG = ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"]
 
 #-------------------------------

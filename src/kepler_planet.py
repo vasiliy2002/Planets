@@ -35,6 +35,13 @@ class KeplerPlanet:
         ry = x * math.sin(self.start_angle*math.pi/180) + y * math.cos(self.start_angle*math.pi/180)
         return rx, ry
 
+    def get_planet_data(self):
+        x, y = self.get_xy()
+        r = math.sqrt(x ** 2 + y ** 2)
+        phita = (math.degrees(math.atan2(y, x)) + 360) % 360
+
+        return r, phita
+
     def update_graphic(self, cx, cy, w, h, scale):
         x, y = self.get_xy()
         widget_coords = utils.coords2window(x, y, cx, cy, w, h, scale)
