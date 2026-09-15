@@ -7,8 +7,8 @@ ts = load.timescale()
 # Конфигурационный файл
 
 # Стартовые размеры окна [пиксели]
-WINDOW_WIDTH = 500
-WINDOW_HEIGHT = 500
+WINDOW_WIDTH = 1600
+WINDOW_HEIGHT = 1000
 
 # Ширина орбит [пиксели]
 ORBIT_LINEWIDTH = 1
@@ -19,9 +19,9 @@ MASS_CENTER_SIZE = 12
 PLANET_SIZE = 12
 
 # Стартовый масштаб
-SCALE = 5
+SCALE = 1e-6
 
-MIN_SCALE, MAX_SCALE = 0.05, 300
+MIN_SCALE, MAX_SCALE = 1e-09, 1e-05
 
 MASS_CENTER_LINEWIDTH = 1
 
@@ -35,7 +35,7 @@ TIME_SEC = dt.timedelta(days=90)
 DATE_LABEL_REFRESH_RATE = 2
 
 START_DATE = ts.utc(2000, 1, 1, 12, 0) #dt.datetime(2000, 1, 1, 12, 0)
-ROOT_DATE = ts.utc(2000, 1, 1, 0, 0)
+ROOT_DATE = ts.tt(2000, 1, 1, 12, 0)
 
 # Мультипликатор масштаба при управлении колесиком
 SCROLL_SCALE_VALUE = 1.2

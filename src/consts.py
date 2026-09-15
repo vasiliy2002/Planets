@@ -1,20 +1,56 @@
 import datetime as dt
+from skyfield.api import load
+import utils
 
+
+ts = load.timescale()
 
 
 # Константы
+PERIHELION = [
+	ts.tdb_jd(2451502.287121773232), # Меркурий
+	ts.tdb_jd(2451513.720262355171), # Венера
+	ts.tdb_jd(2451546.403877782170), # Земля
+	ts.tdb_jd(2451508.062923341058), # Марс
+	ts.tdb_jd(2451318.454493310302), # Юпитер
+	ts.tdb_jd(2452735.770633314736), # Сатурн
+	ts.tdb_jd(2439319.660706136841), # Уран
+	ts.tdb_jd(2467271.980002022348) # Нептун
+]
 
-# --- Радиусы орбит [а. е.] ---
+
+ECCENTRICITIES = [
+	0.2056, # Меркурий
+	0.0068, # Венера
+	0.017, # Земля
+	0.0933, # Марс
+	0.0488, # Юпитер
+	0.0556, # Сатурн
+	0.04439, # Уран
+	0.0112 # Нептун
+]
+
+ANGLES = [
+	77.2619598, # Меркурий
+	131.810487, # Венера
+	101.8032153, # Земля
+	336.1026475, # Марс
+	15.5595535, # Юпитер
+	89.6445658, # Сатурн
+	169.6960884, # Уран
+	38.8370468 # Нептун
+]
+
+# --- Радиусы орбит [km] ---
 RADIUSES = [
-	0.387, # Меркурий
-	0.723, # Венера
-	1., # Земля
-	1.524, # Марс
-	5.2, # Юпитер
-	9.58, # Сатурн
-	19.19, # Уран
-	30.1, # Нептун
-	#39.48 # Плутон
+	57909068.29452708, # Меркурий
+	108208168.1709291, # Венера
+	149665014.5528626, # Земля
+	227939132.9739321, # Марс
+	778557615.6961257, # Юпитер
+	1433436205.589770, # Сатурн
+	2876789143.055653, # Уран
+	4501986736.248356, # Нептун
 ]
 
 #-----------------------------
@@ -22,15 +58,14 @@ RADIUSES = [
 
 # --- Период вращения вокруг Солнца [земной день] ---
 PERIODS = [
-	dt.timedelta(days=87, hours=23, minutes=15, seconds=43, microseconds=804800), # Меркурий
-	dt.timedelta(days=224, hours=16, minutes=49, seconds=9, microseconds=120000), # Венера
-	dt.timedelta(days=365, hours=6, minutes=9, seconds=9, microseconds=504000), # Земля
-	dt.timedelta(days=686, hours=23, minutes=30, seconds=37, microseconds=440000), # Марс
-	dt.timedelta(days=4332, hours=19, minutes=40, seconds=56, microseconds=640000), # Юпитер
-	dt.timedelta(days=10755, hours=16, minutes=46, seconds=33, microseconds=600000), # Сатурн
-	dt.timedelta(days=30687, hours=3, minutes=40, seconds=19, microseconds=200000), # Уран
-	dt.timedelta(days=60190, hours=0, minutes=43, seconds=12, microseconds=0), # Нептун
-	#dt.timedelta(days=90553, hours=0, minutes=28, seconds=48, microseconds=0) # Плутон
+	dt.timedelta(days=87.969257), # Меркурий
+	dt.timedelta(days=224.70079922), # Венера
+	dt.timedelta(days=365.25636), # Земля
+	dt.timedelta(days=686.98), # Марс
+	dt.timedelta(days=4332.589), # Юпитер
+	dt.timedelta(days=10755.698), # Сатурн
+	dt.timedelta(days=30685.4), # Уран
+	dt.timedelta(days=60189), # Нептун
 ]
 
 #------------------------------
@@ -39,14 +74,13 @@ PERIODS = [
 # --- Масса планет [10^25 kg] ---
 MASSES = [
 	0.0033, # Меркурий
-	0.487, # Венера
+	0.48685, # Венера
 	0.597, # Земля
-	0.064, # Марс
-	189.813, # Юпитер
-	56.846, # Сатурн
+	0.0642, # Марс
+	189.819, # Юпитер
+	56.834, # Сатурн
 	8.681, # Уран
-	10.24, # Нептун
-	#0.001 # Плутон	
+	10.241, # Нептун
 ]
 
 #-------------------------------
@@ -65,6 +99,6 @@ PLANET_NAMES = [
 #-------------------------------
 
 #-------------------------------
-PLANET_NAMES_ENG = planet_names = ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"]
+PLANET_NAMES_ENG = ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"]
 
 #-------------------------------

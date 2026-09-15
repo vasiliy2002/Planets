@@ -16,6 +16,9 @@ import configs.config as config
 import utils
 import datetime as dt
 from skyfield.api import load
+from kepler_planet import KeplerPlanet
+import math
+from kivy.graphics import PushMatrix, PopMatrix, Rotate
 
 ts = load.timescale()
 
@@ -44,6 +47,7 @@ class MainWidget(Widget):
         self.mass_center_c = theme['MASS_CENTER']
         max_radius = max(RADIUSES)
 
+
         with self.canvas.before:
             self.bg_color = Color(*theme['SPACE_COLOR'])
             self.backgournd = Rectangle(pos=(self.center_x, self.center_y), size=(self.width, self.height))
@@ -51,35 +55,51 @@ class MainWidget(Widget):
         with self.canvas.before:
             self.sun_color = Color(*theme['SUN_COLOR'])
             self.sun_graphic = Ellipse(size=(config.PLANET_SIZE*2, config.PLANET_SIZE*2))
+
+        with self.canvas:
             Color(1.0, 0, 0, 1.0)
             self.dot = Ellipse(size=(6, 6))
 
-        for i in range(len(RADIUSES)):
 
+        for i in range(len(RADIUSES)):
             with self.canvas.before:
+
+                PushMatrix()
+                start_angle = ANGLES[i]
+                rotate_graphic = Rotate(angle=start_angle, axis=(0, 0, 1), origin=(self.width/2, self.height/2))
                 self.orbit_colors.append(Color(*theme['ORBITS_COLOR']))
-                orbit_graphic = Line(circle=(self.width/2, self.height/2, 1), width=config.ORBIT_LINEWIDTH)
+                
+                a = RADIUSES[i]
+                e = ECCENTRICITIES[i]
+                c = a * e
+                b = a * math.sqrt(1 - e ** 2)
+                
+                
+                orbit_graphic = Line(ellipse=(self.width/2-c-a, self.height/2-b, 2*a, 2*b), width=1)
+                PopMatrix()
 
                 self.planet_colors.append(Color(*theme['PLANETS_COLOR']))
                 planet_graphic = Ellipse(size=(config.PLANET_SIZE, config.PLANET_SIZE))
-        
-            planet = Planet(PLANET_NAMES[i], self.root_time, MASSES[i], RADIUSES[i], PERIODS[i], (RADIUSES[i] / max_radius),
-                                orbit_graphic, planet_graphic, config.START_POS[i])
-            self.planets.append(planet)
+
+            kepler_planet = KeplerPlanet(PLANET_NAMES[i], MASSES[i], PERIODS[i], 
+                start_angle, PERIHELION[i], e, a, orbit_graphic, planet_graphic, rotate_graphic)
+            self.planets.append(kepler_planet)
+        self.update_poses()
+
 
     def change_color(self, scheme):
         theme = styles_dict[scheme]
 
-        self.sun_color = theme['SUN_COLOR']
+        self.sun_color.rgba = theme['SUN_COLOR']
         self.bg_color.rgba = theme['SPACE_COLOR']
 
-        for c in self.orbit_colors:
-            c.rgba = theme['ORBITS_COLOR']
+        self.mass_center_c = theme['MASS_CENTER']
 
         for c in self.planet_colors:
             c.rgba = theme['PLANETS_COLOR']
 
-        self.mass_center_c = theme['MASS_CENTER']
+        for c in self.orbit_colors:
+            c.rgba = theme['ORBITS_COLOR']
 
         if self.mass_center_color:
             self.mass_center_color.rgba = self.mass_center_c
@@ -101,20 +121,22 @@ class MainWidget(Widget):
             instance.text = "Стереть"
 
     def on_size(self, instance, value):
+
+
         cx = self.center_x
         cy = self.center_y
         w = self.width 
         h = self.height
-
-        self.planets_info.x = self.x
-        self.planets_info.top = self.top
         
         self.backgournd.pos = self.pos
         self.backgournd.size = self.size
 
+        self.planets_info.x = self.x
+        self.planets_info.top = self.top
+
         self.sun_graphic.pos = (w // 2 - config.PLANET_SIZE, h // 2 - config.PLANET_SIZE)
         self.dot.pos = (w//2 - 3, h//2 - 3)
-        
+
         for planet in self.planets:
             planet.update_size(cx, cy, w, h, self.scale)
 
@@ -123,7 +145,7 @@ class MainWidget(Widget):
             self.mass_center.update_size(cx, cy, w, h, self.scale)
     
     def update_planets_info(self):
-        earthx, earthy = self.planets[2].get_real_xy()
+        earthx, earthy = self.planets[2].get_xy()
         self.planets_info.update(earthx, earthy, self.planets)
 
     def update_poses(self):
@@ -154,7 +176,7 @@ class MainWidget(Widget):
         self.update_graphic(cx, cy, w, h)
 
     def mul_scale(self, mul):
-        value = round(self.scale * mul, 2)
+        value = self.scale * mul
         self.scale = max(config.MIN_SCALE, min(value, config.MAX_SCALE))
 
     def rescale(self, instance, k):
