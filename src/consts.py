@@ -6,7 +6,72 @@ import utils
 ts = load.timescale()
 
 
-# Константы
+SATURN_DATA = {
+	1400: {
+		'perihelion': ts.tdb_jd(2237551.693605642766),
+		'eccentricity': 0.0578,
+		'angle': 90.6852962,
+		'radius': 1430002600.72253,
+		'period': dt.timedelta(days=10793.28088602765)
+	},
+	1500: {
+		'perihelion': ts.tdb_jd(2269763.367631230969),
+		'eccentricity': 0.0602,
+		'angle': 87.8108300,
+		'radius': 1431155803.116403,
+		'period': dt.timedelta(days=10806.33961724900)
+	},
+	1600: {
+		'perihelion': ts.tdb_jd(2302249.348228134681),
+		'eccentricity': 0.0577,
+		'angle': 94.7673491,
+		'radius': 1432068614.473046,
+		'period': dt.timedelta(days=10816.67991934380)
+	},
+	1800: {
+		'perihelion': ts.tdb_jd(2377563.568153410684),
+		'eccentricity': 0.0596,
+		'angle': 93.9347803,
+		'radius': 1433826895.890101,
+		'period': dt.timedelta(days=10836.60697138529)
+	},
+	2000: {
+		'perihelion': ts.tdb_jd(2452738.073455885984),
+		'eccentricity': 0.0557,
+		'angle': 89.7304950,
+		'radius': 1433449772.231375,
+		'period': dt.timedelta(days=10832.33190288165)
+	},
+	2200: {
+		'perihelion': ts.tdb_jd(2528035.491747999098),
+		'eccentricity': 0.054,
+		'angle': 89.7704295,
+		'radius': 1434009993.824530,
+		'period': dt.timedelta(days=10838.68276976172)
+	},
+	2400: {
+		'perihelion': ts.tdb_jd(2592707.958766771480),
+		'eccentricity': 0.0521,
+		'angle': 93.5943525,
+		'radius': 1433139903.147183,
+		'period': dt.timedelta(days=10828.81965212955)
+	},
+	2600: {
+		'perihelion': ts.tdb_jd(2668274.189477163833),
+		'eccentricity': 0.0527,
+		'angle': 101.6926241,
+		'radius': 1432887594.692481,
+		'period': dt.timedelta(days=10825.96011013010)
+	}
+}
+
+MOON_PERIHELION = ts.tdb_jd(2451533.965359285008)
+MOON_ECCENTRICITY = 0.0549
+MOON_ANGLE = 71.0662430
+MOON_RADIUS = 384400
+MOON_PERIOD = dt.timedelta(days=27.321582)
+MOON_MASS = 0.007
+
 PERIHELION = [
 	ts.tdb_jd(2451502.287121773232), # Меркурий
 	ts.tdb_jd(2451513.720262355171), # Венера

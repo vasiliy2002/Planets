@@ -47,6 +47,8 @@ for i in range(len(planet_names)):
         ANGLES[i], PERIHELION[i], ECCENTRICITIES[i], RADIUSES[i], None, None, None)
     planets.append(kepler_planet)
 
+#planets[-3].orbit_data = SATURN_DATA
+
 for name in tqdm(planet_names):
     df = get_planet_df(name.lower())
     dfs.append(df)
@@ -55,10 +57,14 @@ ref = pd.concat(dfs, ignore_index=True)
 
 r_gen, phita_gen = list(), list()
 
-for i in tqdm(range(len(ref))):
+for i in range(len(ref)):
     row = ref.iloc[i, :]
     planet = row['planet']
     year, month, day = convert_date(row['date'].strip())
+    if year < 2000 or year > 2100:
+        r_gen.append(-1)
+        phita_gen.append(-1)
+        continue
     date = ts.tt(year, month, day, 0, 0)
 
     planet = planets[planet_names.index(planet)]
@@ -68,8 +74,10 @@ for i in tqdm(range(len(ref))):
     r_gen.append(r)
     phita_gen.append(phita)
 
+
     if i % 10000 == 0:
         print(i)
+
 
 
 ref['r_gen'] = r_gen

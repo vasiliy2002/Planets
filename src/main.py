@@ -84,6 +84,8 @@ class MainWidget(Widget):
             kepler_planet = KeplerPlanet(PLANET_NAMES[i], MASSES[i], PERIODS[i], 
                 start_angle, PERIHELION[i], e, a, orbit_graphic, planet_graphic, rotate_graphic)
             self.planets.append(kepler_planet)
+        
+        self.update_poses()
 
 
     def change_color(self, scheme):
@@ -171,6 +173,10 @@ class MainWidget(Widget):
         cy = self.center_y
         w = self.width 
         h = self.height
+
+        if self.planets[-3].update_orbit:
+            self.planets[-3].update_size(cx, cy, w, h, self.scale)
+            self.planets[-3].update_orbit = False
 
         self.update_graphic(cx, cy, w, h)
 

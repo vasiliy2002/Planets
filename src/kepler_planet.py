@@ -4,7 +4,7 @@ import utils
 
 
 class KeplerPlanet:
-    def __init__(self, name, mass, period, start_angle, perihelion_time, eccentricity, a, orbit_graphic, planet_graphic, rotation_graphic):
+    def __init__(self, name, mass, period, start_angle, perihelion_time, eccentricity, a, orbit_graphic, planet_graphic, rotation_graphic, orbit_data=None):
         self.name = name
         self.mass = mass
 
@@ -21,7 +21,44 @@ class KeplerPlanet:
         self.planet_graphic = planet_graphic
         self.rotation_graphic = rotation_graphic
 
-        self.polar_coords = (1, 1) 
+        self.polar_coords = (1, 1)
+
+        # Данные для уточнения орбиты
+        self.orbit_data = orbit_data
+        self.cur_year = 2000
+
+        self.update_orbit = False
+
+    def get_closest_orbit_data_year(self, year):
+        min_year, max_year = min(self.orbit_data.keys()), max(self.orbit_data.keys())
+
+        if year <= min_year:
+            return min_year
+
+        if year >= max_year:
+            return max_year
+
+        low = max([d for d in self.orbit_data if d <= year])
+        high = min([d for d in self.orbit_data if d >= year])
+        near_year = low if year - low <= high - year else high
+        return near_year
+
+    def update_orbit_params(self, year):
+        year = 2000
+        params = self.orbit_data[year]
+
+        self.perihelion_time = params['perihelion']
+        self.e = params['eccentricity']
+        self.start_angle = params['angle']
+        self.a = params['radius']
+        self.period = params['period']
+
+        self.c = self.a * self.e
+        self.b = self.a * math.sqrt(1 - self.e ** 2)
+
+        self.cur_year = year
+        self.update_orbit = True
+
 
     def update_pos(self, t):
         period = self.period.total_seconds() / 86400
@@ -50,6 +87,7 @@ class KeplerPlanet:
     def update_size(self, cx, cy, w, h, scale):
 
         self.rotation_graphic.origin = (cx, cy)
+        self.rotation_graphic.angle = self.start_angle
         self.orbit_graphic.ellipse = (w/2 - self.c*scale - self.a*scale, h/2 - self.b*scale, 2*self.a*scale, 2*self.b*scale)
 
         x, y = self.get_xy()
