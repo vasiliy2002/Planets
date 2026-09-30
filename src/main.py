@@ -10,7 +10,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import NumericProperty
 from styles import styles_dict
 from widgets import ControlPanel
-
+from moon import Moon
 
 import configs.config as config
 import utils
@@ -43,6 +43,7 @@ class MainWidget(Widget):
         self.root_time = config.ROOT_DATE
         self.time = config.START_DATE
         self.planets = list()
+        self.moon = None
         self.mass_center_color = None
         self.mass_center_c = theme['MASS_CENTER']
         max_radius = max(RADIUSES)
@@ -84,6 +85,21 @@ class MainWidget(Widget):
             kepler_planet = KeplerPlanet(PLANET_NAMES[i], MASSES[i], PERIODS[i], 
                 start_angle, PERIHELION[i], e, a, orbit_graphic, planet_graphic, rotate_graphic)
             self.planets.append(kepler_planet)
+        
+        with self.canvas.before:
+            PushMatrix()
+            start_angle = 0
+            rotate_graphic = Rotate(angle=start_angle, axis=(0, 0, 1), origin=(self.width/2, self.height/2))
+            self.orbit_colors.append(Color(0., 1., 0, 1))
+
+            orbit_graphic = Line(ellipse=(self.width/2, self.height/2, 200, 200), width=1)
+            PopMatrix()
+
+            self.planet_colors.append(Color(*theme['PLANETS_COLOR']))
+            planet_graphic = Ellipse(size=(config.PLANET_SIZE, config.PLANET_SIZE))
+
+        self.moon = Moon(orbit_graphic, planet_graphic, rotate_graphic)
+
         self.update_poses()
 
 
@@ -140,6 +156,9 @@ class MainWidget(Widget):
         for planet in self.planets:
             planet.update_size(cx, cy, w, h, self.scale)
 
+        self.moon.origin = self.planets[2].get_xy()
+        self.moon.update_graphic(cx, cy, w, h, self.scale)
+
         if self.mass_center:
             center_x, center_y, masses = utils.get_centers_and_masses(self.planets)
             self.mass_center.update_size(cx, cy, w, h, self.scale)
@@ -154,6 +173,8 @@ class MainWidget(Widget):
         for planet in self.planets:
             planet.update_pos(self.time)
 
+        self.moon.update_pos(self.time)
+
         if self.mass_center:
             center_x, center_y, masses = utils.get_centers_and_masses(self.planets)
             self.mass_center.update_pos(center_x, center_y, masses)
@@ -161,6 +182,9 @@ class MainWidget(Widget):
     def update_graphic(self, cx, cy, w, h):
         for planet in self.planets:
             planet.update_graphic(cx, cy, w, h, self.scale)
+
+        self.moon.origin = self.planets[2].get_xy()
+        self.moon.update_graphic(cx, cy, w, h, self.scale)
 
         if self.mass_center:
             self.mass_center.update_graphic(cx, cy, w, h, self.scale)
@@ -172,6 +196,10 @@ class MainWidget(Widget):
         cy = self.center_y
         w = self.width 
         h = self.height
+
+        if self.planets[-3].update_orbit:
+            self.planets[-3].update_size(cx, cy, w, h, self.scale)
+            self.planets[-3].update_orbit = False
 
         self.update_graphic(cx, cy, w, h)
 
