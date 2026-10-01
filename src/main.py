@@ -45,6 +45,7 @@ class MainWidget(Widget):
         self.planets = list()
         self.moon = None
         self.mass_center_color = None
+        self.red_dot_color = None
         self.mass_center_c = theme['MASS_CENTER']
         max_radius = max(RADIUSES)
 
@@ -58,7 +59,7 @@ class MainWidget(Widget):
             self.sun_graphic = Ellipse(size=(config.PLANET_SIZE*2, config.PLANET_SIZE*2))
 
         with self.canvas:
-            Color(1.0, 0, 0, 1.0)
+            self.red_dot_color = Color(1.0, 0, 0, 0)
             self.dot = Ellipse(size=(6, 6))
 
 
@@ -102,11 +103,17 @@ class MainWidget(Widget):
 
         self.update_poses()
 
+    def set_red_dot(self, checkbox, value):
+        self.red_dot_color.a = int(value)
+
+    def set_moon_orbit_scale(self, value):
+        self.moon_orbit_label.text = str(round(value, 2)) + "x"
+        self.moon.additional_scale = value
 
     def change_color(self, scheme):
         theme = styles_dict[scheme]
 
-        self.sun_color.rgba = theme['SUN_COLOR']
+        self.sun_color.rgba = theme['PLANETS_COLOR'] #[min(1, 1.1 * x) for x in theme['PLANETS_COLOR'][:3]] + [1.]
         self.bg_color.rgba = theme['SPACE_COLOR']
 
         self.mass_center_c = theme['MASS_CENTER']

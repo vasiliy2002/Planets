@@ -31,6 +31,7 @@ class Moon():
 
 		self.origin = (0, 0)
 		self.polar_coords = (1, 1)
+		self.additional_scale = 50
 
 	def date2d(self, date):
 		ut1 = date.ut1_calendar()
@@ -78,13 +79,13 @@ class Moon():
 
 		longt = math.atan2(yeclip, xeclip)
 		lat = math.atan2(zeclip, math.sqrt( xeclip*xeclip + yeclip*yeclip ))
-		r = math.sqrt(xeclip**2 + yeclip**2) #* 6371
+		r = math.sqrt(xeclip**2 + yeclip**2) 
 
 		self.polar_coords = (r, longt)
 
 	def get_xy(self):
 		r, phi = self.polar_coords
-		x, y = r * math.cos(phi) * 50, r * math.sin(phi) * 50
+		x, y = r * math.cos(phi) * self.additional_scale, r * math.sin(phi) * self.additional_scale
 		return self.origin[0] + x, self.origin[1] + y
 
 	def update_planet_graphic(self, cx, cy, w, h, scale):
@@ -98,7 +99,7 @@ class Moon():
 
 		self.rotation_graphic.origin = origin_coords
 		self.rotation_graphic.angle = degrees(self.N + self.w)
-		self.orbit_graphic.ellipse = (origin_coords[0] - self.c*scale*50 - self.a*scale*50, origin_coords[1] - self.b*scale*50, 2*self.a*scale*50, 2*self.b*scale*50)
+		self.orbit_graphic.ellipse = (origin_coords[0] - self.c*scale*self.additional_scale - self.a*scale*self.additional_scale, origin_coords[1] - self.b*scale*self.additional_scale, 2*self.a*scale*self.additional_scale, 2*self.b*scale*self.additional_scale)
 
 	def update_graphic(self, cx, cy, w, h, scale):
 		self.update_planet_graphic(cx, cy, w, h, scale)

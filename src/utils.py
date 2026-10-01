@@ -12,6 +12,9 @@ from widgets import PlanetsPosesInfo, AddTrack
 from kivy.uix.popup import Popup
 import re
 from scipy import optimize
+from kivy.uix.slider import Slider
+from kivy.uix.checkbox import CheckBox
+
 
 def kepler_eq(E, M, e):
   return E - e * math.sin(E) - M
@@ -127,6 +130,32 @@ def build_control_panel(control_panel, mw, change_color):
     btn = Button(text="Центр масс", font_size=16)
     btn.bind(on_press=mw.draw_mass_center)
 
+    # Красная точка в центре Солнца
+    red_dot_layout = BoxLayout(spacing=10)
+
+    red_dot_label = Label(text="Красная точка:")
+    red_dot_checkbox = CheckBox()
+
+    red_dot_checkbox.bind(active=mw.set_red_dot)
+
+    red_dot_layout.add_widget(red_dot_label)
+    red_dot_layout.add_widget(red_dot_checkbox)
+
+    # Виджеты для изменения масштаба орбиты Луны
+    moon_orbit_layout = BoxLayout(spacing=10)
+
+    moon_orbit_label = Label(text="Масштаб Луны:")
+    moon_orbit_scale = Label(text="50x")
+    moon_orbit_slider = Slider(min=1, max=150, value=50)
+
+    mw.moon_orbit_label = moon_orbit_scale
+    moon_orbit_slider.bind(on_touch_move=lambda instance, touch: mw.set_moon_orbit_scale(instance.value))
+    moon_orbit_slider.bind(on_touch_up=lambda instance, touch: mw.set_moon_orbit_scale(instance.value))    
+
+    moon_orbit_layout.add_widget(moon_orbit_label)
+    moon_orbit_layout.add_widget(moon_orbit_scale)
+    moon_orbit_layout.add_widget(moon_orbit_slider)
+
     # Измененние масштаба
     scale_layout = BoxLayout(spacing=10)
     
@@ -192,6 +221,8 @@ def build_control_panel(control_panel, mw, change_color):
 
     left_space.add_widget(theme_layout)
     left_space.add_widget(btn)
+    left_space.add_widget(red_dot_layout)
+    left_space.add_widget(moon_orbit_layout)
     left_space.add_widget(scale_layout)
     left_space.add_widget(speed_layout)
     left_space.add_widget(pause_btn)
@@ -205,7 +236,7 @@ def build_control_panel(control_panel, mw, change_color):
     control_panel.buttons += dropdown_buttons
     control_panel.buttons += [ad_button, bc_button, date_dropdown_button, btn, scale_plus_btn, scale_minus_btn, speed_plus_btn,
                                 speed_minus_btn, pause_btn, date_enter_button, add_track_button]
-    control_panel.labels += [track_label, scale_label, speed_label, date_label, theme_label, date_enter_label]
+    control_panel.labels += [track_label, scale_label, speed_label, date_label, theme_label, moon_orbit_label, moon_orbit_scale, red_dot_label, date_enter_label]
 
     Clock.schedule_interval(mw.update, 1.0/config.FPS)
     update_label_date = lambda x: mw.refresh_date(date_label)
