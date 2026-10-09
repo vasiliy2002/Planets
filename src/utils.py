@@ -14,7 +14,11 @@ import re
 from scipy import optimize
 from kivy.uix.slider import Slider
 from kivy.uix.checkbox import CheckBox
+from consts import *
 
+def radians(x):
+    x = x % 360
+    return (x * math.pi / 180)
 
 def kepler_eq(E, M, e):
   return E - e * math.sin(E) - M
@@ -126,9 +130,85 @@ def build_control_panel(control_panel, mw, change_color):
     theme_layout.add_widget(theme_label)
     theme_layout.add_widget(dropdown_button)
 
+    # Выбор центра координат
+    origin_layout = BoxLayout(spacing=10)
+    origin_label = Label(text="Центр координат:")
+
+    origin_dropdown = DropDown()
+    origin_dropdown_buttons = list()
+
+    for body in ['Центр масс', 'Солнце'] + PLANET_NAMES:
+        origin_btn = Button(text=body, size_hint_y=None)
+        origin_btn.bind(on_release=lambda btn: (origin_dropdown.select(btn.text), mw.change_origin(btn.text)))
+
+        origin_dropdown.add_widget(origin_btn)
+        origin_dropdown_buttons.append(origin_btn)
+
+    origin_dropdown_button = Button(text='Солнце')
+    origin_dropdown_buttons.append(origin_dropdown_button)
+    origin_dropdown_button.bind(on_release=origin_dropdown.open)
+
+    origin_dropdown.bind(on_select=lambda instance, x: setattr(origin_dropdown_button, 'text', x))
+    origin_layout.add_widget(origin_label)
+    origin_layout.add_widget(origin_dropdown_button)
+
+    # Длина траектории
+    trajectory_length_layout = BoxLayout(spacing=10)
+    trajectory_length_label = Label(text="Время учета позиций:", halign='center')
+    trajectory_time_label = Label(text="years=1", halign='right', size_hint_x=0.3)
+    trajectory_slider = Slider(min=0.1, max=20, value=1)
+
+
+
+    trajectory_slider.bind(on_touch_move=lambda instance, touch: mw.set_trajectory_length(instance.value))
+    trajectory_slider.bind(on_touch_up=lambda instance, touch: mw.set_trajectory_length(instance.value))
+
+    trajectory_length_layout.add_widget(trajectory_length_label)
+    trajectory_length_layout.add_widget(trajectory_time_label)
+    trajectory_length_layout.add_widget(trajectory_slider)
+
+    mw.trajectory_time_label = trajectory_time_label
+    #trajectory_length_label.text_size[0] = trajectory_length_label.size[0]
+
+
     # Кнопка центра масс
+    """
     btn = Button(text="Центр масс", font_size=16)
     btn.bind(on_press=mw.draw_mass_center)
+    """
+
+    # Отображение планет
+    objects = ['Центр масс', 'Солнце'] + PLANET_NAMES + ['Луна']
+    layouts = list()
+    object_labels = list()
+
+    for name in objects:
+        object_layout = BoxLayout(spacing=10)
+        object_label = Label(text=name)
+        object_checkbox = CheckBox()
+        object_checkbox.name = name
+
+        if name != "Центр масс":
+            object_checkbox.active = True
+        object_checkbox.bind(active=lambda instance, value: mw.set_visible(instance.name, value))
+
+        object_layout.add_widget(object_label)
+        object_layout.add_widget(object_checkbox)
+
+        layouts.append(object_layout)
+        object_labels.append(object_label)
+
+    # Отображение подписей
+    planet_names_layout = BoxLayout(spacing=10)
+
+    planet_names_label = Label(text='Подписи небесных тел:')
+    planet_names_checkbox = CheckBox()
+
+    planet_names_checkbox.active = True
+    planet_names_checkbox.bind(active=mw.set_labels)
+
+    planet_names_layout.add_widget(planet_names_label)
+    planet_names_layout.add_widget(planet_names_checkbox)
 
     # Красная точка в центре Солнца
     red_dot_layout = BoxLayout(spacing=10)
@@ -157,6 +237,7 @@ def build_control_panel(control_panel, mw, change_color):
     moon_orbit_layout.add_widget(moon_orbit_slider)
 
     # Измененние масштаба
+    """
     scale_layout = BoxLayout(spacing=10)
     
     scale_label = Label(text="Масштаб:")
@@ -170,6 +251,7 @@ def build_control_panel(control_panel, mw, change_color):
     scale_layout.add_widget(scale_label)
     scale_layout.add_widget(scale_plus_btn)
     scale_layout.add_widget(scale_minus_btn)
+    """
 
     # Изменение скорости
     speed_layout = BoxLayout(spacing=10)
@@ -220,10 +302,15 @@ def build_control_panel(control_panel, mw, change_color):
     date_label = Label(font_size=30)
 
     left_space.add_widget(theme_layout)
-    left_space.add_widget(btn)
+    left_space.add_widget(origin_layout)
+    left_space.add_widget(trajectory_length_layout)
+    #left_space.add_widget(btn)
+    for layout in layouts:
+        left_space.add_widget(layout)
+    left_space.add_widget(planet_names_layout)
     left_space.add_widget(red_dot_layout)
     left_space.add_widget(moon_orbit_layout)
-    left_space.add_widget(scale_layout)
+    #left_space.add_widget(scale_layout)
     left_space.add_widget(speed_layout)
     left_space.add_widget(pause_btn)
     left_space.add_widget(date_enter_label)
@@ -234,9 +321,11 @@ def build_control_panel(control_panel, mw, change_color):
 
 
     control_panel.buttons += dropdown_buttons
-    control_panel.buttons += [ad_button, bc_button, date_dropdown_button, btn, scale_plus_btn, scale_minus_btn, speed_plus_btn,
+    control_panel.buttons += origin_dropdown_buttons
+    control_panel.buttons += [ad_button, bc_button, date_dropdown_button, speed_plus_btn,
                                 speed_minus_btn, pause_btn, date_enter_button, add_track_button]
-    control_panel.labels += [track_label, scale_label, speed_label, date_label, theme_label, moon_orbit_label, moon_orbit_scale, red_dot_label, date_enter_label]
+    control_panel.labels += object_labels
+    control_panel.labels += [trajectory_length_label, trajectory_time_label, planet_names_label, origin_label, track_label, speed_label, date_label, theme_label, moon_orbit_label, moon_orbit_scale, red_dot_label, date_enter_label]
 
     Clock.schedule_interval(mw.update, 1.0/config.FPS)
     update_label_date = lambda x: mw.refresh_date(date_label)

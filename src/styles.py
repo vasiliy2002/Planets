@@ -31,7 +31,7 @@ styles_dict = {
 		'CONTROL_PANEL_COLOR': [0.08, 0.11, 0.11, 1.0],
 		'BUTTONS_COLOR': [0.15, 0.2, 0.2, 1.0],
 		'TEXT_COLOR': [0.95, 0.85, 0.7, 1.0],
-		'SUN_COLOR': [0.9, 0.9, 0, 1.]
+		'SUN_COLOR': [1.0, 0.85, 0.2, 1.0]
 	},
 
 	'Solar Flare Minimal': {
