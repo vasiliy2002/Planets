@@ -152,6 +152,9 @@ class MainWidget(Widget):
     def set_red_dot(self, checkbox, value):
         self.red_dot_color.a = int(value)
 
+    def set_dists_table(self, checkbox, value):
+        self.planets_info.change_opacity(int(value))
+
     def set_labels(self, checkbox, value):
         self.sun.set_label_visible(value)
         self.moon.set_label_visible(value)
@@ -249,7 +252,7 @@ class MainWidget(Widget):
     def set_trajectory_length(self, instance):
         value, outer = instance.value, instance.outer
         value = math.exp(value)
-        
+
         label, objects = list(), list()
         if outer:
             label = self.outer_trajectory_time_label

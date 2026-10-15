@@ -70,6 +70,9 @@ class PlanetsPosesInfo(GridLayout):
         self.mc_dist.text_size[0] = self.mc_dist.size[0] + 30
         self.add_widget(self.mc_dist)
 
+    def change_opacity(self, opacity):
+        for label in self.children:
+            label.opacity = opacity
 
     def get_mass_center_xy(self, planets):
         x, y = 0, 0

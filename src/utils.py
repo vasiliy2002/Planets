@@ -232,6 +232,18 @@ def build_control_panel(control_panel, mw, change_color):
     red_dot_layout.add_widget(red_dot_label)
     red_dot_layout.add_widget(red_dot_checkbox)
 
+    # Таблица расстояний
+    planets_dists_layout = BoxLayout(spacing=10)
+
+    planets_dists_label = Label(text="Таблица расстояний:")
+    planets_dists_checkbox = CheckBox()
+    planets_dists_checkbox.active = True
+
+    planets_dists_checkbox.bind(active=mw.set_dists_table)
+
+    planets_dists_layout.add_widget(planets_dists_label)
+    planets_dists_layout.add_widget(planets_dists_checkbox)
+
     # Виджеты для изменения масштаба орбиты Луны
     moon_orbit_layout = BoxLayout(spacing=10)
 
@@ -322,6 +334,7 @@ def build_control_panel(control_panel, mw, change_color):
         left_space.add_widget(layout)
     left_space.add_widget(planet_names_layout)
     left_space.add_widget(red_dot_layout)
+    left_space.add_widget(planets_dists_layout)
     left_space.add_widget(moon_orbit_layout)
     #left_space.add_widget(scale_layout)
     left_space.add_widget(speed_layout)
@@ -340,7 +353,7 @@ def build_control_panel(control_panel, mw, change_color):
     control_panel.labels += object_labels
     control_panel.labels += static_labels
     control_panel.labels += length_labels
-    control_panel.labels += [trajectory_all_label, trajectory_length_label, trajectory_time_label, planet_names_label, origin_label, track_label, speed_label, date_label, theme_label, moon_orbit_label, moon_orbit_scale, red_dot_label, date_enter_label]
+    control_panel.labels += [planets_dists_label, trajectory_all_label, trajectory_length_label, trajectory_time_label, planet_names_label, origin_label, track_label, speed_label, date_label, theme_label, moon_orbit_label, moon_orbit_scale, red_dot_label, date_enter_label]
 
     Clock.schedule_interval(mw.update, 1.0/config.FPS)
     update_label_date = lambda x: mw.refresh_date(date_label)
