@@ -153,21 +153,32 @@ def build_control_panel(control_panel, mw, change_color):
     origin_layout.add_widget(origin_dropdown_button)
 
     # Длина траектории
-    trajectory_length_layout = BoxLayout(spacing=10)
-    trajectory_length_label = Label(text="Время учета позиций:", halign='center')
-    trajectory_time_label = Label(text="years=1", halign='right', size_hint_x=0.3)
-    trajectory_slider = Slider(min=0.1, max=20, value=1)
+    trajectory_all_label = Label(text="Время учета позиций")
 
+    trajectory_inner_layout, trajectory_outer_layout = BoxLayout(spacing=10), BoxLayout(spacing=10)
+    static_labels = list()
+    length_labels = list()
 
+    for i, trajectory_layout in enumerate([trajectory_inner_layout, trajectory_outer_layout]):
+        text = "Внешних планет:" if i else "Внутренних планет:"
+        trajectory_length_label = Label(text=text, halign='center')
+        trajectory_time_label = Label(text="years=1.0", halign='right', size_hint_x=0.3)
+        
+        static_labels.append(trajectory_length_label)
+        length_labels.append(trajectory_time_label)
+        
+        trajectory_slider = Slider(min=-2, max=8, value=0)
 
-    trajectory_slider.bind(on_touch_move=lambda instance, touch: mw.set_trajectory_length(instance.value))
-    trajectory_slider.bind(on_touch_up=lambda instance, touch: mw.set_trajectory_length(instance.value))
+        trajectory_slider.outer = i
+        trajectory_slider.bind(on_touch_move=lambda instance, touch: mw.set_trajectory_length(instance))
+        trajectory_slider.bind(on_touch_up=lambda instance, touch: mw.set_trajectory_length(instance))
 
-    trajectory_length_layout.add_widget(trajectory_length_label)
-    trajectory_length_layout.add_widget(trajectory_time_label)
-    trajectory_length_layout.add_widget(trajectory_slider)
+        trajectory_layout.add_widget(trajectory_length_label)
+        trajectory_layout.add_widget(trajectory_time_label)
+        trajectory_layout.add_widget(trajectory_slider)
 
-    mw.trajectory_time_label = trajectory_time_label
+    mw.inner_trajectory_time_label = length_labels[0]
+    mw.outer_trajectory_time_label = length_labels[1]
     #trajectory_length_label.text_size[0] = trajectory_length_label.size[0]
 
 
@@ -303,7 +314,9 @@ def build_control_panel(control_panel, mw, change_color):
 
     left_space.add_widget(theme_layout)
     left_space.add_widget(origin_layout)
-    left_space.add_widget(trajectory_length_layout)
+    left_space.add_widget(trajectory_all_label)
+    left_space.add_widget(trajectory_inner_layout)
+    left_space.add_widget(trajectory_outer_layout)
     #left_space.add_widget(btn)
     for layout in layouts:
         left_space.add_widget(layout)
@@ -325,7 +338,9 @@ def build_control_panel(control_panel, mw, change_color):
     control_panel.buttons += [ad_button, bc_button, date_dropdown_button, speed_plus_btn,
                                 speed_minus_btn, pause_btn, date_enter_button, add_track_button]
     control_panel.labels += object_labels
-    control_panel.labels += [trajectory_length_label, trajectory_time_label, planet_names_label, origin_label, track_label, speed_label, date_label, theme_label, moon_orbit_label, moon_orbit_scale, red_dot_label, date_enter_label]
+    control_panel.labels += static_labels
+    control_panel.labels += length_labels
+    control_panel.labels += [trajectory_all_label, trajectory_length_label, trajectory_time_label, planet_names_label, origin_label, track_label, speed_label, date_label, theme_label, moon_orbit_label, moon_orbit_scale, red_dot_label, date_enter_label]
 
     Clock.schedule_interval(mw.update, 1.0/config.FPS)
     update_label_date = lambda x: mw.refresh_date(date_label)

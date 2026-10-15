@@ -14,7 +14,7 @@ class Sun():
         self.sun_color = sun_color
         self.visible = True
         self.label_visible = True
-        self.time_limit = dt.timedelta(days=355)
+        self.time_limit = dt.timedelta(days=365)
         self.last_t = None
 
     def set_label_visible(self, vis):

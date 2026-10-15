@@ -246,12 +246,21 @@ class MainWidget(Widget):
             self.mass_center.set_visible(True)
             instance.text = "Стереть"
 
-    def set_trajectory_length(self, value):
-        self.trajectory_time_label.text = "years=" + str(round(value, 2))
-        self.sun.time_limit = dt.timedelta(value * 365)
-        self.mass_center.time_limit = dt.timedelta(value * 365)
-        for planet in self.planets:
-            planet.time_limit = dt.timedelta(value * 365)
+    def set_trajectory_length(self, instance):
+        value, outer = instance.value, instance.outer
+        value = math.exp(value)
+        
+        label, objects = list(), list()
+        if outer:
+            label = self.outer_trajectory_time_label
+            objects = self.planets[4:] + [self.sun, self.mass_center]
+        else:
+            label = self.inner_trajectory_time_label
+            objects = self.planets[:4]
+
+        label.text = "years=" + str(round(value, 2))
+        for obj in objects:
+            obj.time_limit = dt.timedelta(value * 365)
 
     def on_size(self, instance, value):
 
