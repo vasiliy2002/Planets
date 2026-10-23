@@ -5,7 +5,7 @@ import math
 
 
 class MassCenter:
-    def __init__(self, mass_center_color, mass_center_graphic, line_graphic, center_x, center_y, masses, origin, name, label, t):
+    def __init__(self, graphics, center_x, center_y, masses, origin, name, label, t):
         self.mass_center_color = mass_center_color
         self.mass_center_color.a = 0
         self.mass_center_graphic = mass_center_graphic

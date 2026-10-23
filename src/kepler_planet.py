@@ -2,175 +2,112 @@ import math
 import configs.config as config
 import utils
 import datetime as dt
+from canvas_geometry import CanvasGeometry
 
 
-class KeplerPlanet:
-    def __init__(self, name, mass, period, start_angle, perihelion_time, eccentricity, a, orbit_alpha, orbit_color, planet_color, trajectory_color, orbit_graphic, planet_graphic, rotation_graphic, line_graphic, origin, label, orbit_data=None):
+class KeplerBody:
+    def __init__(self, name, mass, label, body_position, body_graphics, origin, show_trace, active, show_label=True):
         self.name = name
         self.mass = mass
-
-        self.period = period
-        self.start_angle = start_angle
-        self.perihelion_time = perihelion_time
-        self.e = eccentricity
-        self.a = a
-        self.c = self.a * self.e
-        self.b = self.a * math.sqrt(1 - self.e ** 2)
-
-        # Графический объект орбиты и планеты
-        self.orbit_graphic = orbit_graphic
-        self.planet_graphic = planet_graphic
-        self.rotation_graphic = rotation_graphic
-        self.line_graphic = line_graphic
-
-        self.line = list()
-
-        self.polar_coords = (1, 1)
-
-        # Данные для уточнения орбиты
-        self.orbit_data = orbit_data
-        self.cur_year = 2000
-
-        self.update_orbit = False
-        self.origin = origin
         self.label = label
-
-        self.orbit_alpha = orbit_alpha
-        self.planet_color = planet_color
-        self.orbit_color = orbit_color
-        self.trajectory_color = trajectory_color
-        self.visible = True
-
-        self.label_visible = True
+        self.body_position = body_position
+        self.body_graphics = body_graphics
+        self.origin = origin
         self.time_limit = dt.timedelta(days=365)
-        self.last_t = None
+        self.show_trace = show_trace
+        self.show_label = show_label
+        self.active = active
 
-    def set_orbit(self, vis):
-        self.orbit_color.a = int(vis) * self.orbit_alpha
+    def change_origin(self, origin):
+        if origin.name == self.name:
+            origin = None
 
-    def set_visible(self, vis):
-        self.visible = vis
+        self.origin = origin
+        self.body_position.origin = None if not origin else origin.body_position
+        self.clear_trajectory()
 
-        orbit_vis = (self.origin != None) and (self.origin.name == "Солнце") and self.visible
-        self.set_orbit(orbit_vis)
-
-        self.planet_color.a = int(vis)
-        self.trajectory_color.a = int(vis)
-        self.label.opacity = int(vis and self.label_visible)
-
-    def set_label_visible(self, vis):
-        self.label_visible = vis
-        self.label.opacity = int(vis and self.visible)
+        self.body_graphics.set_orbit_visible(self.active and (origin is not None) and (origin.name == "Солнце"))
 
     def clear_trajectory(self):
-        self.line = list()
-        self.line_graphic.points = list()
+        self.body_position.clear_trajectory()
+        self.body_graphics.clear_trajectory()
 
-    def get_closest_orbit_data_year(self, year):
-        min_year, max_year = min(self.orbit_data.keys()), max(self.orbit_data.keys())
+    def set_label_visible(self, visible):
+        self.show_label = visible
+        self.label.opacity = int((self.show_label) and (self.active))
 
-        if year <= min_year:
-            return min_year
+    def set_visible(self, visible):
+        self.active = visible
+        self.set_label_visible(self.show_label)
+        self.body_graphics.set_body_visible(visible)
+        if self.origin and self.origin.name == 'Солнце':
+            self.body_graphics.set_orbit_visible(visible)
 
-        if year >= max_year:
-            return max_year
+    def trace_status(self):
+        return (self.origin != None) and ((self.origin.name != "Солнце") or (self.name == "Центр масс")) and self.active and self.show_trace
 
-        low = max([d for d in self.orbit_data if d <= year])
-        high = min([d for d in self.orbit_data if d >= year])
-        near_year = low if year - low <= high - year else high
-        return near_year
+    def update_pos(self, t, **kwargs):
+        self.body_position.update_pos(t, **kwargs)
 
-
-    def update_pos(self, t):
-        period = self.period.total_seconds() / 86400
-        time_since_perihelion = (t - self.perihelion_time) % period
-        self.polar_coords = utils.get_pos(self.a, self.e, period, time_since_perihelion)
-        self.last_t = t
-    
-    def get_xy(self):
-        r, phi = self.polar_coords
-        x, y = math.cos(phi) * r, math.sin(phi) * r
-        rx = x * math.cos(self.start_angle*math.pi/180) - y * math.sin(self.start_angle*math.pi/180)
-        ry = x * math.sin(self.start_angle*math.pi/180) + y * math.cos(self.start_angle*math.pi/180)
-        return rx, ry
-
-    def get_planet_data(self):
-        x, y = self.get_xy()
-        r = math.sqrt(x ** 2 + y ** 2)
-        phita = (math.degrees(math.atan2(y, x)) + 360) % 360
-
-        return r, phita
-
-    def get_origin_coords(self):
-        if not self.origin:
-            return 0, 0
-        else:
-            x, y = self.get_xy()
-            ox, oy = self.origin.get_xy()
-            return x - ox, y - oy
-
-    def truncate_trajectory(self):
-        if len(self.line) < 2:
-            return
-
-        time_limit = self.time_limit.total_seconds() / 86400
-        left_t = self.line[0][2]
-        right_t = self.line[-1][2]
-        while len(self.line) >= 2 and abs(left_t - right_t) > time_limit:
-            self.line.pop(0)
-            self.line_graphic.points = self.line_graphic.points[2:]
-            left_t = self.line[0][2]
-
-    def update_trajectory(self, widget_coords):
-        x, y = self.get_origin_coords()
-        if len(self.line) > 1:
-            last_x, last_y = self.line[-1][0], self.line[-1][1]
-            if math.sqrt((x - last_x) ** 2 + (y - last_y) ** 2) < 0.1:
-                return
-
-        self.line.append([x, y, self.last_t])
-        self.line_graphic.points += widget_coords
-        self.truncate_trajectory()
+    def append_trajectory(self, t):
+        if self.trace_status():
+            self.body_position.append_trajectory(t)
 
     def update_graphic(self, cx, cy, w, h, scale):
-        x, y = self.get_origin_coords()
-        widget_coords = utils.coords2window(x, y, cx, cy, w, h, scale)
-        self.planet_graphic.pos = (widget_coords[0] - config.PLANET_SIZE/2, widget_coords[1] - config.PLANET_SIZE/2)
-        
-        self.label.pos = (self.planet_graphic.pos[0] - self.label.size[0] // 2 + config.PLANET_SIZE // 2, self.planet_graphic.pos[1] + config.PLANET_SIZE)
+        x, y = self.body_position.get_origin_coords()
+        cg = CanvasGeometry(cx, cy, w, h, scale)
+        trace = self.trace_status()
+        t = self.body_position.last_t() if (trace and 
+            len(self.body_position.line) * 2 != len(self.body_graphics.line_graphic.instruction.points)) else None
 
-        if not self.origin or self.origin.name == "Солнце" or not self.visible:
-            self.line = list()
-            self.line_graphic.points = list()
-        else:
-            self.update_trajectory(widget_coords)
-            """
-            x, y = self.get_origin_coords()
-            self.line.append([x, y])
-            self.line_graphic.points += widget_coords
+        self.body_graphics.update_body_graphic(x, y, cg, t, trace)
 
-            self.line_graphic.points = self.line_graphic.points[-1000:]
-            self.line = self.line[-500:]
-            """
+        if self.body_position.orbit_changed:
+            a, b, c = self.body_position.a, self.body_position.b, self.body_position.c
+            start_angle = self.body_position.start_angle
+            if self.name == "Луна":
+                cx, cy = self.body_position.earth_pos.get_xy()
+                cx, cy = utils.coords2window(cx, cy, cg.cx, cg.cy, cg.w, cg.h, cg.scale)
+            self.body_graphics.update_orbit(cg, start_angle, a, b, c, cx, cy, self.body_position.additional_scale)
+            self.body_position.orbit_changed = False
 
-    def __str__(self):
-        return self.name
+        self.body_position.truncate_trajectory(self.time_limit)
+        self.body_graphics.truncate_trajectory(self.time_limit)
+        self.update_label()
+
+        if not trace:
+            self.body_position.clear_trajectory()
+            self.body_graphics.clear_trajectory()
 
     def update_size(self, cx, cy, w, h, scale):
-        self.rotation_graphic.origin = (cx, cy)
-        self.rotation_graphic.angle = self.start_angle
-        self.orbit_graphic.ellipse = (w/2 - self.c*scale - self.a*scale, h/2 - self.b*scale, 2*self.a*scale, 2*self.b*scale)
+        x, y = self.body_position.get_origin_coords()
+        cg = CanvasGeometry(cx, cy, w, h, scale)
+        trace_line = self.body_position.line
+        
+        a, b, c, start_angle = None, None, None, None
+        if self.body_graphics.orbit_graphic:
+            a, b, c = self.body_position.a, self.body_position.b, self.body_position.c
+            start_angle = self.body_position.start_angle
 
-        x, y = self.get_origin_coords()
+        self.body_graphics.update_size(x, y, cg, trace_line, a, b, c, start_angle)
 
-        widget_coords = utils.coords2window(x, y, cx, cy, w, h, scale)
-        self.planet_graphic.pos = (widget_coords[0] - config.PLANET_SIZE/2, widget_coords[1] - config.PLANET_SIZE/2)
+        self.update_label()
 
-        self.label.pos = (self.planet_graphic.pos[0] - self.label.size[0] // 2 + config.PLANET_SIZE // 2, self.planet_graphic.pos[1] + config.PLANET_SIZE)
+    def update_label(self):
+        ellipse = self.body_graphics.planet_graphic.instruction
+        self.label.pos = (ellipse.pos[0] - self.label.size[0] // 2 + ellipse.size[0] // 2, ellipse.pos[1] + ellipse.size[0])
 
-        size = min(w, h)
-        for i in range(len(self.line_graphic.points)):
-            if i % 2 == 0:
-                self.line_graphic.points[i] = utils.coord2window(self.line[i//2][0], cx, size, scale)
-            else:
-                self.line_graphic.points[i] = utils.coord2window(self.line[i//2][1], cy, size, scale)
+    def change_orbit_color(self, color):
+        if self.body_graphics.orbit_graphic.color.a > 0:
+            self.body_graphics.orbit_graphic.color.a = color[-1]
+        self.body_graphics.orbit_graphic.alpha_channel = color[-1]
+        self.body_graphics.orbit_graphic.color.rgb = color[:-1]
+
+    def get_xy(self):
+        return self.body_position.get_xy()
+
+    def get_polar_coords(self):
+        return self.body_position.get_polar_coords()
+
+    def get_start_angle(self):
+        return self.body_position.start_angle

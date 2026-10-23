@@ -17,10 +17,11 @@ import utils
 import datetime as dt
 from skyfield.api import load
 from sun import Sun
-from kepler_planet import KeplerPlanet
+from kepler_planet import KeplerBody
 import math
 from kivy.graphics import PushMatrix, PopMatrix, Rotate
 from kivy.uix.label import Label
+from graphic_manager import GraphicManager
 
 ts = load.timescale()
 
@@ -37,6 +38,7 @@ class MainWidget(Widget):
 
         theme = styles_dict[style]
 
+        self.gm = GraphicManager()
         self.orbit_colors = list()
         self.planet_colors = list()
         self.mass_center = None
@@ -54,103 +56,30 @@ class MainWidget(Widget):
         self.trajectories_colors = list()
         max_radius = max(RADIUSES)
 
+        cx, cy = self.center_x, self.center_y
+        w, h = self.width, self.height
 
-        with self.canvas.before:
-            self.bg_color = Color(*theme['SPACE_COLOR'])
-            self.backgournd = Rectangle(pos=(self.center_x, self.center_y), size=(self.width, self.height))
-        
-        with self.canvas:
-            sun_color = Color(*theme['SUN_COLOR'])
-            self.sun_color = sun_color
-            sun_graphic = Ellipse(size=(config.PLANET_SIZE*2, config.PLANET_SIZE*2))
-            line_graphic = Line(width=config.MASS_CENTER_LINEWIDTH)
-
-        label = Label(text='Солнце', halign='center')
-        label.text_size = label.size
-        self.add_widget(label)
-
-        self.sun = Sun(sun_color, sun_graphic, line_graphic, label)
-
-        with self.canvas:
-            self.red_dot_color = Color(1.0, 0, 0, 0)
-            self.dot = Ellipse(size=(6, 6))
-
-
-        for i in range(len(RADIUSES)):
-            with self.canvas.before:
-
-                PushMatrix()
-                start_angle = ANGLES[i]
-                rotate_graphic = Rotate(angle=start_angle, axis=(0, 0, 1), origin=(self.width/2, self.height/2))
-                orbit_color = Color(*theme['ORBITS_COLOR'])
-                orbit_alpha = orbit_color.a
-                self.orbit_colors.append(orbit_color)
-                
-                a = RADIUSES[i]
-                e = ECCENTRICITIES[i]
-                c = a * e
-                b = a * math.sqrt(1 - e ** 2)
-                
-                
-                orbit_graphic = Line(ellipse=(self.width/2-c-a, self.height/2-b, 2*a, 2*b), width=1)
-                PopMatrix()
-
-                planet_color = Color(*config.PLANET_COLORS[i])
-                self.planet_colors.append(planet_color)  #(Color(*theme['PLANETS_COLOR']))
-                planet_graphic = Ellipse(size=(config.PLANET_SIZE, config.PLANET_SIZE))
-
-                # line graphic
-                tr_color = Color(*config.PLANET_COLORS[i]) #Color(*theme['PLANETS_COLOR'])
-                self.trajectories_colors.append(tr_color)
-                line_graphic = Line(width=config.MASS_CENTER_LINEWIDTH)
-
-                label = Label(text=PLANET_NAMES[i], halign='center')
-                label.text_size = label.size
-                self.add_widget(label)
-
-            kepler_planet = KeplerPlanet(PLANET_NAMES[i], MASSES[i], PERIODS[i], 
-                start_angle, PERIHELION[i], e, a, orbit_alpha, orbit_color, planet_color, tr_color, orbit_graphic, planet_graphic, rotate_graphic, line_graphic, self.sun, label)
-            self.planets.append(kepler_planet)
-        
-        with self.canvas.before:
-            PushMatrix()
-            start_angle = 0
-            rotate_graphic = Rotate(angle=start_angle, axis=(0, 0, 1), origin=(self.width/2, self.height/2))
-
-            orbit_color = Color(*theme['ORBITS_COLOR'])
-            orbit_alpha = orbit_color.a
-            self.orbit_colors.append(orbit_color)
-
-            orbit_graphic = Line(ellipse=(self.width/2, self.height/2, 200, 200), width=1)
-            PopMatrix()
-
-            moon_color = Color(0.85, 0.85, 0.85, 1.0)
-            self.planet_colors.append(moon_color)  #(Color(*theme['PLANETS_COLOR']))
-            planet_graphic = Ellipse(size=(config.PLANET_SIZE, config.PLANET_SIZE))
-
-        label = Label(text='Луна', halign='center')
-        label.text_size = label.size
-        self.add_widget(label)
-        self.moon = Moon(orbit_alpha, moon_color, orbit_color, orbit_graphic, planet_graphic, rotate_graphic, label, self.sun)
-
+        self.gm.create_background(self.canvas.before, cx, cy, w, h, theme['SPACE_COLOR'])
+        self.sun = utils.build_sun(self.gm, self.canvas.before, theme, self.add_widget)
+        self.gm.create_body(self.canvas, 'Red dot', (1., 0., 0., 0.), 6)
         self.origin = self.sun
 
-        with self.canvas.before:
-            self.mass_center_color = Color(*self.mass_center_c)
-            mass_center_graphic = Ellipse(size=(config.PLANET_SIZE, config.PLANET_SIZE))
-            line_graphic = Line(width=config.MASS_CENTER_LINEWIDTH)
+        for i in range(len(RADIUSES)):
+            a = RADIUSES[i]
+            e = ECCENTRICITIES[i]
 
-        label = Label(text='Центр масс', halign='center')
-        label.text_size = label.size
-        self.add_widget(label)
+            planet = utils.build_planet(self.gm, theme, config.PLANET_COLORS[i], self.add_widget, w, h, self.canvas.before,
+                PLANET_NAMES[i], MASSES[i], PERIODS[i], ANGLES[i], PERIHELION[i], a, e, self.sun)
+            self.planets.append(planet)
 
-        center_x, center_y, masses = utils.get_centers_and_masses(self.planets)
-        self.mass_center = MassCenter(self.mass_center_color, mass_center_graphic, line_graphic, center_x, center_y, masses, self.origin, "Центр масс", label, self.time)
+        self.moon = utils.build_moon(self.gm, self.canvas.before, "Луна", MOON_MASS, (0.85, 0.85, 0.85, 1.0), theme['ORBITS_COLOR'],
+            self.add_widget, self.sun, self.planets[2], w, h)
 
-        self.update_poses()
+        self.mass_center = utils.build_mass_center(self.gm, "Центр масс", self.canvas.before, theme['MASS_CENTER'], self.sun, self.add_widget)
 
     def set_red_dot(self, checkbox, value):
-        self.red_dot_color.a = int(value)
+        red_dot = self.gm.get_body_by_name("Red dot")
+        red_dot.planet_graphic.color.a = int(value)
 
     def set_dists_table(self, checkbox, value):
         self.planets_info.change_opacity(int(value))
@@ -169,7 +98,7 @@ class MainWidget(Widget):
 
     def set_moon_orbit_scale(self, value):
         self.moon_orbit_label.text = str(round(value, 2)) + "x"
-        self.moon.additional_scale = value
+        self.moon.body_position.additional_scale = value
 
     def get_body_by_name(self, name):
         if name == 'Солнце':
@@ -186,60 +115,25 @@ class MainWidget(Widget):
 
     def change_origin(self, origin_name):
         body = self.get_body_by_name(origin_name)
-        print(origin_name)
-        if not body:
-            return
-
         self.origin = body
-        self.mass_center.clear_trajectory()
+
+        self.sun.change_origin(body)
+        self.mass_center.change_origin(body)
+        self.moon.change_origin(body)
 
         for planet in self.planets:
-            planet.clear_trajectory()
-
-        self.sun.clear_trajectory()
-
-        self.sun.origin = body
-        self.moon.origin = body
-        self.mass_center.origin = body
-
-        for planet in self.planets:
-            planet.origin = body
-
-        body.origin = None
-        orbit_vis = origin_name == "Солнце"
-
-        for planet in self.planets:
-            if not planet.visible:
-                continue
-            planet.set_orbit(orbit_vis)
-        
-        if self.moon.visible:
-            self.moon.set_orbit(orbit_vis)
+            planet.change_origin(body)
 
     def change_color(self, scheme):
         theme = styles_dict[scheme]
         self.style = theme
 
-        #self.sun_color.rgba = theme['PLANETS_COLOR']
-        self.bg_color.rgba = theme['SPACE_COLOR']
-
-        #self.mass_center_c = theme['MASS_CENTER'][:3] + [int(self.mass_center.visible)]
-        """
-        for c in self.planet_colors:
-            c.rgba = theme['PLANETS_COLOR']
-        """
-        """
-        for t in self.trajectories_colors:
-            t.rgba = theme['PLANETS_COLOR']
-        """
-        for c in self.orbit_colors:
-            c.rgb = theme['ORBITS_COLOR'][:-1]
+        self.gm.background.color.rgba = theme['SPACE_COLOR']
 
         for planet in self.planets:
-            planet.orbit_alpha = theme['ORBITS_COLOR'][-1]
+            planet.change_orbit_color(theme['ORBITS_COLOR'])
 
-        self.moon.orbit_alpha = theme['ORBITS_COLOR'][-1]
-        #self.mass_center_color.rgba = self.mass_center_c
+        self.moon.change_orbit_color(theme['ORBITS_COLOR'])
 
     def draw_mass_center(self, instance):
         if instance.text == "Стереть":
@@ -272,23 +166,19 @@ class MainWidget(Widget):
         w = self.width 
         h = self.height
         
-        self.backgournd.pos = self.pos
-        self.backgournd.size = self.size
+        self.gm.background.instruction.pos = self.pos
+        self.gm.background.instruction.size = self.size
 
         self.planets_info.x = self.x
         self.planets_info.top = self.top
 
         self.sun.update_size(cx, cy, w, h, self.scale)
-        self.dot.pos = (w//2 - 3, h//2 - 3)
+        red_dot = self.gm.get_body_by_name("Red dot")
+        red_dot.planet_graphic.instruction.pos = (w//2 - 3, h//2 - 3)
 
         for planet in self.planets:
             planet.update_size(cx, cy, w, h, self.scale)
 
-        self.moon.earth_origin = self.planets[2].get_xy()
-        self.moon.update_graphic(cx, cy, w, h, self.scale)
-
-
-        center_x, center_y, masses = utils.get_centers_and_masses(self.planets)
         self.mass_center.update_size(cx, cy, w, h, self.scale)
     
     def update_planets_info(self):
@@ -305,32 +195,33 @@ class MainWidget(Widget):
 
         self.moon.update_pos(self.time)
 
-
         center_x, center_y, masses = utils.get_centers_and_masses(self.planets)
-        self.mass_center.update_pos(center_x, center_y, masses, self.time)
+        self.mass_center.update_pos(self.time, centers_x=center_x, centers_y=center_y, masses=masses)
+
+    def append_trajectories(self):
+        self.sun.append_trajectory(self.time)
+
+        for planet in self.planets:
+            planet.append_trajectory(self.time)
+
+        self.mass_center.append_trajectory(self.time)
 
     def update_graphic(self, cx, cy, w, h):
         for planet in self.planets:
             planet.update_graphic(cx, cy, w, h, self.scale)
 
-        self.moon.earth_origin = self.planets[2].get_xy()
         self.moon.update_graphic(cx, cy, w, h, self.scale)
-
         self.sun.update_graphic(cx, cy, w, h, self.scale)
-
         self.mass_center.update_graphic(cx, cy, w, h, self.scale)
 
     def update(self, delta_t):
         self.update_poses()
+        self.append_trajectories()
 
         cx = self.center_x
         cy = self.center_y
         w = self.width 
         h = self.height
-
-        if self.planets[-3].update_orbit:
-            self.planets[-3].update_size(cx, cy, w, h, self.scale)
-            self.planets[-3].update_orbit = False
 
         self.update_graphic(cx, cy, w, h)
 

@@ -4,14 +4,12 @@ import datetime as dt
 import math
 
 class Sun():
-    def __init__(self, sun_color, sun_graphic, line_graphic, label, name='Солнце'):
-        self.sun_graphic = sun_graphic
+    def __init__(self, graphics, label, name='Солнце'):
+        self.graphics = graphics
         self.name = name
         self.origin = None
         self.label = label
-        self.line_graphic = line_graphic
         self.line = list()
-        self.sun_color = sun_color
         self.visible = True
         self.label_visible = True
         self.time_limit = dt.timedelta(days=365)

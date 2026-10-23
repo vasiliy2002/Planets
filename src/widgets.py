@@ -23,7 +23,6 @@ class AddTrack(BoxLayout):
 
         self.type_layout = BoxLayout(spacing=10)
         self.type_label = Label(text="Тип")
-        
 
 
 class PlanetsPosesInfo(GridLayout):
@@ -37,7 +36,7 @@ class PlanetsPosesInfo(GridLayout):
 
         for planet in planets:
             self.add_widget(Label(text=planet.name))
-            angle = (planet.polar_coords[1]/math.pi * 180 + planet.start_angle + 360) % 360
+            angle = (planet.get_polar_coords()[1]/math.pi * 180 + planet.get_start_angle() + 360) % 360
             angle = round(angle, 2)
             gradus = Label(text="-", halign='right')
 
@@ -98,7 +97,7 @@ class PlanetsPosesInfo(GridLayout):
 
     def update(self, earthx, earthy, planets):
         for i, planet in enumerate(planets):
-            angle = (planet.polar_coords[1]/math.pi * 180 + planet.start_angle + 360) % 360
+            angle = (planet.get_polar_coords()[1]/math.pi * 180 + planet.get_start_angle() + 360) % 360
             angle = round(angle, 2)
             self.graduses[i].text = f"{angle:.2f}"
 

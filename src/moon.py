@@ -16,7 +16,8 @@ def radians(x):
     return (x * math.pi / 180)
 
 class Moon():
-    def __init__(self, orbit_alpha, moon_color, orbit_color, orbit_graphic, planet_graphic, rotation_graphic, label, origin):
+    def __init__(self, graphics, label, origin):
+        self.graphics = graphics
         self.i = radians(5.1454)
         self.a = 60.2666 * 6371
         self.e = 0.054900

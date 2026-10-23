@@ -15,6 +15,80 @@ from scipy import optimize
 from kivy.uix.slider import Slider
 from kivy.uix.checkbox import CheckBox
 from consts import *
+from sun_position import SunPosition
+from body_graphic import BodyGraphic
+from kepler_pos import KeplerPosition
+from moon_position import MoonPosition
+from mass_center_position import MassCenterPosition
+from kepler_planet import KeplerBody
+
+
+def build_sun(gm, canvas, theme, add_widget):
+    name = 'Солнце'
+    mass = SUN_MASS
+
+    label = Label(text=name, halign='center')
+    label.text_size = label.size
+    add_widget(label)
+
+    body_position = SunPosition()
+    body_graphic = gm.create_body(canvas, name, theme['SUN_COLOR'], config.PLANET_SIZE * 2,
+        line_color=theme['SUN_COLOR'])
+
+    sun = KeplerBody(name, mass, label, body_position, body_graphic, None, True, True)
+    return sun
+
+def build_planet(gm, theme, color, add_widget, w, h, canvas, name, mass, period, start_angle, perihelion_time, a, e, origin):
+    c = a * e
+    b = a * math.sqrt(1 - e ** 2)
+
+    label = Label(text=name, halign='center')
+    label.text_size = label.size
+    add_widget(label)
+
+    body_position = KeplerPosition(period, start_angle, perihelion_time, a, e, origin.body_position)
+    body_graphics = gm.create_body(canvas, name, color,
+        config.PLANET_SIZE, theme['ORBITS_COLOR'], (w/2-c-a, h/2-b, 2*a, 2*b), color, start_angle, (w/2, h/2))
+    
+    planet = KeplerBody(name, mass, label, body_position, body_graphics, origin, True, True)
+    return planet
+
+def build_moon(gm, canvas, name, mass, color, orbit_color, add_widget, sun, earth, w, h):
+    label = Label(text=name, halign='center')
+    label.text_size = label.size
+    add_widget(label)
+
+    body_position = MoonPosition(earth.body_position, sun.body_position)
+    body_graphics = gm.create_body(canvas, name, color, config.PLANET_SIZE,
+            orbit_color, (w/2, h/2, 100, 100), rotation_angle=0, rotation_center=(w/2, h/2))
+
+    moon = KeplerBody(name, mass, label, body_position, body_graphics, sun, False, True)
+    return moon
+
+def build_mass_center(gm, name, canvas, color, origin, add_widget):
+    color[-1] = 0
+
+    label = Label(text=name, halign='center')
+    label.text_size = label.size
+    label.opacity = 0
+    add_widget(label)
+
+    body_position = MassCenterPosition(name, origin.body_position)
+    body_graphics = gm.create_body(canvas, name, color, config.PLANET_SIZE,
+            line_color=color)
+
+    mass_center = KeplerBody(name, 0, label, body_position, body_graphics, origin, True, False)
+    return mass_center
+
+def xy2polar(x, y):
+    r = math.sqrt(x**2 + y**2)
+    x, y = x / r, y / r
+    angle = math.acos(x)
+    if y < 0:
+        angle *= -1
+    angle = (angle + 2 * math.pi) % (2 * math.pi)
+    angle = angle/math.pi*180
+    return (r, angle)
 
 def radians(x):
     x = x % 360
@@ -67,7 +141,7 @@ def get_centers_and_masses(planets):
 
     return center_x, center_y, mass
 
-def coord2window(pos, c, size, scale):
+def coord2window(pos, c, scale):
     return c + pos * scale
 
 def coords2window(pos_x, pos_y, cx, cy, w, h, scale):
@@ -76,7 +150,7 @@ def coords2window(pos_x, pos_y, cx, cy, w, h, scale):
 
 def build_canvas(mw):
 
-    earthx, earthy = mw.planets[2].get_xy()
+    earthx, earthy = mw.planets[2].body_position.get_xy()
     planets_info = PlanetsPosesInfo(earthx, earthy, mw.planets, cols=3, col_default_width=150, row_default_height=30)
 
     mw.add_widget(planets_info)
