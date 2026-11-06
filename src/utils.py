@@ -8,7 +8,7 @@ import math
 from kivy.uix.dropdown import DropDown
 from kivy.uix.textinput import TextInput
 from styles import styles_dict
-from widgets import PlanetsPosesInfo, AddTrack
+from widgets import PlanetsPosesInfo, AddTrack, PlotWidget
 from kivy.uix.popup import Popup
 import re
 from scipy import optimize
@@ -318,6 +318,17 @@ def build_control_panel(control_panel, mw, change_color):
     planets_dists_layout.add_widget(planets_dists_label)
     planets_dists_layout.add_widget(planets_dists_checkbox)
 
+    # Отображение графиков
+    plot_show_layout = BoxLayout(spacing=10)
+
+    plot_show_label = Label(text='Графики:')
+    plot_show_checkbox = CheckBox()
+
+    plot_show_checkbox.bind(active=mw.set_plot_visible)
+
+    plot_show_layout.add_widget(plot_show_label)
+    plot_show_layout.add_widget(plot_show_checkbox)
+
     # Виджеты для изменения масштаба орбиты Луны
     moon_orbit_layout = BoxLayout(spacing=10)
 
@@ -398,6 +409,10 @@ def build_control_panel(control_panel, mw, change_color):
     # Метка с датой
     date_label = Label(font_size=30)
 
+    plot_widget = PlotWidget()
+    mw.add_widget(plot_widget)
+    mw.plot_widget = plot_widget
+
     left_space.add_widget(theme_layout)
     left_space.add_widget(origin_layout)
     left_space.add_widget(trajectory_all_label)
@@ -409,6 +424,7 @@ def build_control_panel(control_panel, mw, change_color):
     left_space.add_widget(planet_names_layout)
     left_space.add_widget(red_dot_layout)
     left_space.add_widget(planets_dists_layout)
+    left_space.add_widget(plot_show_layout)
     left_space.add_widget(moon_orbit_layout)
     #left_space.add_widget(scale_layout)
     left_space.add_widget(speed_layout)
@@ -427,9 +443,10 @@ def build_control_panel(control_panel, mw, change_color):
     control_panel.labels += object_labels
     control_panel.labels += static_labels
     control_panel.labels += length_labels
-    control_panel.labels += [planets_dists_label, trajectory_all_label, trajectory_length_label, trajectory_time_label, planet_names_label, origin_label, track_label, speed_label, date_label, theme_label, moon_orbit_label, moon_orbit_scale, red_dot_label, date_enter_label]
+    control_panel.labels += [plot_show_label, planets_dists_label, trajectory_all_label, trajectory_length_label, trajectory_time_label, planet_names_label, origin_label, track_label, speed_label, date_label, theme_label, moon_orbit_label, moon_orbit_scale, red_dot_label, date_enter_label]
 
     Clock.schedule_interval(mw.update, 1.0/config.FPS)
+    Clock.schedule_interval(mw.draw_plots, 1.0/5)
     update_label_date = lambda x: mw.refresh_date(date_label)
     Clock.schedule_interval(update_label_date, 1.0/config.DATE_LABEL_REFRESH_RATE)
 

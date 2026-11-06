@@ -9,8 +9,9 @@ from consts import *
 from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import NumericProperty
 from styles import styles_dict
-from widgets import ControlPanel
+from widgets import ControlPanel, PlotWidget
 from moon import Moon
+from dists_manager import DistsManager
 
 import configs.config as config
 import utils
@@ -60,7 +61,7 @@ class MainWidget(Widget):
         w, h = self.width, self.height
 
         self.gm.create_background(self.canvas.before, cx, cy, w, h, theme['SPACE_COLOR'])
-        self.sun = utils.build_sun(self.gm, self.canvas.before, theme, self.add_widget)
+        self.sun = utils.build_sun(self.gm, self.canvas, theme, self.add_widget)
         self.gm.create_body(self.canvas, 'Red dot', (1., 0., 0., 0.), 6)
         self.origin = self.sun
 
@@ -68,14 +69,16 @@ class MainWidget(Widget):
             a = RADIUSES[i]
             e = ECCENTRICITIES[i]
 
-            planet = utils.build_planet(self.gm, theme, config.PLANET_COLORS[i], self.add_widget, w, h, self.canvas.before,
+            planet = utils.build_planet(self.gm, theme, config.PLANET_COLORS[i], self.add_widget, w, h, self.canvas,
                 PLANET_NAMES[i], MASSES[i], PERIODS[i], ANGLES[i], PERIHELION[i], a, e, self.sun)
             self.planets.append(planet)
 
-        self.moon = utils.build_moon(self.gm, self.canvas.before, "Луна", MOON_MASS, (0.85, 0.85, 0.85, 1.0), theme['ORBITS_COLOR'],
+        self.moon = utils.build_moon(self.gm, self.canvas, "Луна", MOON_MASS, (0.85, 0.85, 0.85, 1.0), theme['ORBITS_COLOR'],
             self.add_widget, self.sun, self.planets[2], w, h)
 
-        self.mass_center = utils.build_mass_center(self.gm, "Центр масс", self.canvas.before, theme['MASS_CENTER'], self.sun, self.add_widget)
+        self.mass_center = utils.build_mass_center(self.gm, "Центр масс", self.canvas, theme['MASS_CENTER'], self.sun, self.add_widget)
+
+        self.dists_manager = DistsManager(self.planets, self.sun, self.mass_center)
 
     def set_red_dot(self, checkbox, value):
         red_dot = self.gm.get_body_by_name("Red dot")
@@ -83,6 +86,11 @@ class MainWidget(Widget):
 
     def set_dists_table(self, checkbox, value):
         self.planets_info.change_opacity(int(value))
+
+    def set_plot_visible(self, checkbox, value):
+        self.plot_widget.set_visible(value)
+        if not value:
+            self.dists_manager.clear_dists()
 
     def set_labels(self, checkbox, value):
         self.sun.set_label_visible(value)
@@ -123,6 +131,8 @@ class MainWidget(Widget):
 
         for planet in self.planets:
             planet.change_origin(body)
+
+        self.dists_manager.clear_dists()
 
     def change_color(self, scheme):
         theme = styles_dict[scheme]
@@ -172,6 +182,9 @@ class MainWidget(Widget):
         self.planets_info.x = self.x
         self.planets_info.top = self.top
 
+        self.plot_widget.size = (self.width, self.height // 3)
+        self.plot_widget.pos = (self.x + w - self.width, 0)
+
         self.sun.update_size(cx, cy, w, h, self.scale)
         red_dot = self.gm.get_body_by_name("Red dot")
         red_dot.planet_graphic.instruction.pos = (w//2 - 3, h//2 - 3)
@@ -197,6 +210,13 @@ class MainWidget(Widget):
 
         center_x, center_y, masses = utils.get_centers_and_masses(self.planets)
         self.mass_center.update_pos(self.time, centers_x=center_x, centers_y=center_y, masses=masses)
+
+        if self.plot_widget.bg_color.a != 0:
+            self.dists_manager.log_dists(self.time)
+
+    def draw_plots(self, delta_t):
+        if self.plot_widget.bg_color.a != 0:
+            self.plot_widget.plot_image.draw_plots(self.dists_manager, self.time)
 
     def append_trajectories(self):
         self.sun.append_trajectory(self.time)

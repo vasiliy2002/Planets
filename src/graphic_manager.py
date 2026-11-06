@@ -22,7 +22,7 @@ class GraphicManager():
 
     def create_body(self, canvas, name, body_color, body_size, orbit_color=None, orbit_size=None, 
         line_color=None, rotation_angle=None, rotation_center=None):
-        with canvas:
+        with canvas.before:
 
             rotation = None
             if rotation_angle is not None:
@@ -38,15 +38,16 @@ class GraphicManager():
             if rotation_angle is not None:
                 PopMatrix()
 
-            circle_color = Color(*body_color)
-            circle_instruction = Ellipse(size=(body_size, body_size))
-            body_element = GraphicElement(circle_color, circle_instruction)
-            
             line_color_graphics, line_instruction, line_element = None, None, None
             if line_color:
                 line_color_graphics = Color(*line_color)
                 line_instruction = Line(width=1)
                 line_element = GraphicElement(line_color_graphics, line_instruction)
+
+        with canvas:
+            circle_color = Color(*body_color)
+            circle_instruction = Ellipse(size=(body_size, body_size))
+            body_element = GraphicElement(circle_color, circle_instruction)
 
         body = BodyGraphic(name, body_element, orbit_element, line_element)
         self.bodies_graphic.append(body)
