@@ -237,12 +237,12 @@ class PlotWidget(BoxLayout):
 
     def set_min_y(self, instance):
         if 1E5 ** instance.value >= self.plot_image.max_y - 1:
-            instance.value = (math.log(self.plot_image.max_y, 1E5)-1) / 2.5
+            instance.value = (math.log(self.plot_image.max_y, 1E5))
         self.plot_image.min_y = 1E5 ** instance.value
 
     def set_max_y(self, instance):
         if 1E5 ** instance.value <= self.plot_image.min_y + 1:
-            instance.value = (math.log(self.plot_image.min_y, 1E5) + 1) / 2.5
+            instance.value = (math.log(self.plot_image.min_y, 1E5))
         self.plot_image.max_y = 1E5 ** instance.value
 
     def slider_touch(self, index, instance, value):
