@@ -10,10 +10,12 @@ from kivy.uix.textinput import TextInput
 from kivy.properties import NumericProperty
 from functools import partial
 from kivy.graphics import Line
+
 import utils
 import math
 import datetime as dt
 import configs.config as config
+from consts import *
 import numpy as np
 
 
@@ -38,8 +40,12 @@ class PlotImage(FloatLayout):
     min_y = NumericProperty(1)
     max_y = NumericProperty(1E9)
 
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.dists_manager = None
+        self.last_t = None
+
         with self.canvas.before:
             self.bg_color = Color(*[0.08*2, 0.11*2, 0.11*2, 1.])
             self.background = Rectangle(pos=[self.pos[0] + self.width*0.15, self.pos[1] + self.height*0.1], size=(self.width*0.8, self.height*0.8))
@@ -59,10 +65,51 @@ class PlotImage(FloatLayout):
             Color(0.9, 0.9, 0.9, 0.9)
             self.mass_center_plot = Line(points=list(), width=2)
 
+        self.pos_label = Label(text="Если кликнуть мышью внутри графика, то тут появятся значения координат.", pos_hint={'center_x': 0.5, 'center_y': 0.95}, size_hint=(None, None))
+        self.add_widget(self.pos_label)
         self.xlabels = self.create_x_labels()
         self.ylabels = self.create_y_labels()
         self.rename_x_labels()
         self.rename_y_labels()
+
+    def on_touch_down(self, touch):
+        if self.collide_point(*touch.pos):
+            x, y = touch.pos
+            x, y = (x - self.pos[0]) / self.width, (y - self.pos[1]) / self.height
+
+            if ((x >= 0.15) and (x <= 0.95)) and ((y >= 0.1) and (y <= 0.9)):
+                x, y = (x - 0.15) / 0.8, (y - 0.1) / 0.8
+                years = self.time_span * (x - 0.5) * 2
+                distance = round(self.min_y + y * (self.max_y - self.min_y))
+
+                if self.dists_manager:
+                    target_time = self.last_t + dt.timedelta(days=years * 365)
+
+                    for i, planet_dist in enumerate(self.dists_manager.planets_dists + [self.dists_manager.sun_dists, self.dists_manager.mass_center_dists]):
+                        if i <= 7:
+                            if not self.dists_manager.planets[i].active:
+                                continue
+                        if i == 8 and not self.dists_manager.sun.active:
+                            continue
+                        if i == 9 and not self.dists_manager.mass_center.active:
+                            continue
+
+                        times = np.abs(planet_dist.get_times() - target_time)
+                        closest = np.argmin(times)
+
+                        closest_time = (planet_dist.get_times() - self.last_t)[closest]
+                        closest_time = round(closest_time / 365, 2)
+                        dist = planet_dist.get_dists()[closest]
+                        dist_coord = (dist - self.min_y) / (self.max_y - self.min_y)
+
+                        if abs(dist_coord - y) < 0.05:
+                            dist = f"{round(dist):_}".replace("_", " ")
+                            self.pos_label.text = f"=={(PLANET_NAMES + ['Солнце', 'Центр масс'])[i]}== Года: {closest_time} Дистанция: {dist}"
+                            return True
+
+                distance = f"{distance:_}".replace("_", " ")
+                self.pos_label.text = f"года: {round(years, 2)} дистанция: " + distance
+            return True 
 
     def get_time_geometry(self, timestamp, cur_time):
         time_span_days = self.time_span * 365
@@ -104,6 +151,8 @@ class PlotImage(FloatLayout):
         plot.points = xy.flatten().tolist()
 
     def draw_plots(self, dists_manager, t):
+        self.dists_manager = dists_manager
+        self.last_t = t
         for i in range(len(self.planet_plots)):
             if not dists_manager.planets[i].active:
                 self.planet_plots[i].points = list()
@@ -227,36 +276,35 @@ class PlotImage(FloatLayout):
 class PlotWidget(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.handlers = [self.set_time_span, self.set_min_y, self.set_max_y]
+        self.handlers = [self.set_time_span, self.set_min_y, self.set_y_scale]
+        self.y_scale = 0
         with self.canvas.before:
             self.bg_color = Color(*[0.08, 0.11, 0.11, 0.])
             self.background = Rectangle(pos=self.pos, size=(self.width, self.height))
 
     def set_time_span(self, instance):
-        self.plot_image.time_span = instance.value
+        self.plot_image.time_span = round(instance.value)
 
     def set_min_y(self, instance):
-        if 1E5 ** instance.value >= self.plot_image.max_y - 1:
-            instance.value = (math.log(self.plot_image.max_y, 1E5))
         self.plot_image.min_y = 1E5 ** instance.value
+        self.plot_image.max_y = self.plot_image.min_y + self.y_scale
 
-    def set_max_y(self, instance):
-        if 1E5 ** instance.value <= self.plot_image.min_y + 1:
-            instance.value = (math.log(self.plot_image.min_y, 1E5))
-        self.plot_image.max_y = 1E5 ** instance.value
+    def set_y_scale(self, instance):
+        self.y_scale = 1E5 ** instance.value
+        self.plot_image.max_y = self.y_scale + self.plot_image.min_y
 
     def slider_touch(self, index, instance, value):
         self.handlers[index](instance)
 
     def create_plot(self):
         sliders_layout = BoxLayout(spacing=10, orientation='vertical', size_hint_x=0.35)
-        slider_names = ['Диапозон времени:', 'Мин. y:', 'Макс. y:']
+        slider_names = ['Диапозон времени:', 'Мин. y:', 'Диапозон y:']
         sliders = list()
         for i, name in enumerate(slider_names):
             box_layout = BoxLayout(spacing=10)
             label = Label(text=name)
 
-            max_val = 10 if i == 0 else 2
+            max_val = 15 if i == 0 else 2
             val = 1 if i == 0 else i
             slider = Slider(min=1, max=max_val, value=val)
 
@@ -269,11 +317,11 @@ class PlotWidget(BoxLayout):
             sliders_layout.add_widget(box_layout)
 
         self.add_widget(sliders_layout)
-
+        self.y_scale = 1E5 ** 2
         plot_image = PlotImage()
         self.plot_image = plot_image
         self.plot_image.min_y = 1E5 ** sliders[1].value
-        self.plot_image.max_y = 1E5 ** sliders[2].value
+        self.plot_image.max_y = 1E5 ** sliders[2].value + self.plot_image.min_y
         self.add_widget(plot_image)
         self.bg_color.a = 1
 
