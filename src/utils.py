@@ -27,7 +27,7 @@ def build_sun(gm, canvas, theme, add_widget):
     name = 'Солнце'
     mass = SUN_MASS
 
-    label = Label(text=name, halign='center')
+    label = Label(text="Sun", halign='center', font_size=20)
     label.text_size = label.size
     add_widget(label)
 
@@ -38,11 +38,11 @@ def build_sun(gm, canvas, theme, add_widget):
     sun = KeplerBody(name, mass, label, body_position, body_graphic, None, True, True)
     return sun
 
-def build_planet(gm, theme, color, add_widget, w, h, canvas, name, mass, period, start_angle, perihelion_time, a, e, origin):
+def build_planet(label_name, gm, theme, color, add_widget, w, h, canvas, name, mass, period, start_angle, perihelion_time, a, e, origin):
     c = a * e
     b = a * math.sqrt(1 - e ** 2)
 
-    label = Label(text=name, halign='center')
+    label = Label(text=label_name, halign='center', font_size=20)
     label.text_size = label.size
     add_widget(label)
 
@@ -54,7 +54,7 @@ def build_planet(gm, theme, color, add_widget, w, h, canvas, name, mass, period,
     return planet
 
 def build_moon(gm, canvas, name, mass, color, orbit_color, add_widget, sun, earth, w, h):
-    label = Label(text=name, halign='center')
+    label = Label(text="Moon", halign='center', font_size=20)
     label.text_size = label.size
     add_widget(label)
 
@@ -68,7 +68,7 @@ def build_moon(gm, canvas, name, mass, color, orbit_color, add_widget, sun, eart
 def build_mass_center(gm, name, canvas, color, origin, add_widget):
     color[-1] = 0
 
-    label = Label(text=name, halign='center')
+    label = Label(text="Mass center", halign='center', font_size=20)
     label.text_size = label.size
     label.opacity = 0
     add_widget(label)
@@ -366,10 +366,10 @@ def build_control_panel(control_panel, mw, change_color):
     speed_label = Label(text="Скорость:")
 
     speed_plus_btn = Button(text="+", font_size=16)
-    speed_plus_btn.bind(on_press=lambda instance: mw.change_speed(instance, 1.5))
+    speed_plus_btn.bind(on_press=lambda instance: mw.change_speed(instance, 2))
 
     speed_minus_btn = Button(text="-", font_size=16)
-    speed_minus_btn.bind(on_press=lambda instance: mw.change_speed(instance, 0.67))
+    speed_minus_btn.bind(on_press=lambda instance: mw.change_speed(instance, 0.5))
 
     speed_layout.add_widget(speed_label)
     speed_layout.add_widget(speed_plus_btn)
@@ -408,6 +408,11 @@ def build_control_panel(control_panel, mw, change_color):
 
     # Метка с датой
     date_label = Label(font_size=30)
+
+    show_date_label = Label(text='aaa', font_size=40)
+    mw.show_date_label = show_date_label
+
+    mw.add_widget(show_date_label)
 
     plot_widget = PlotWidget()
     mw.add_widget(plot_widget)

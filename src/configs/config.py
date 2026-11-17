@@ -26,7 +26,7 @@ MIN_SCALE, MAX_SCALE = 1e-09, 1e-05
 MASS_CENTER_LINEWIDTH = 1
 
 # Стартовая частота отрисовки
-FPS = 40
+FPS = 60
 
 # Количество земных дней проходящих за секунду использования программы
 TIME_SEC = dt.timedelta(days=90)

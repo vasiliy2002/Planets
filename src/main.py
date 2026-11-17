@@ -16,6 +16,10 @@ from dists_manager import DistsManager
 import configs.config as config
 import utils
 import datetime as dt
+import cv2
+import numpy as np
+
+
 from skyfield.api import load
 from sun import Sun
 from kepler_planet import KeplerBody
@@ -55,6 +59,13 @@ class MainWidget(Widget):
         self.sun = None
         self.style = None
         self.trajectories_colors = list()
+
+        
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        self.video_writer = cv2.VideoWriter(
+            "jupiter_center.mp4", fourcc, 60, (1920, 1080))
+
+
         max_radius = max(RADIUSES)
 
         cx, cy = self.center_x, self.center_y
@@ -69,7 +80,7 @@ class MainWidget(Widget):
             a = RADIUSES[i]
             e = ECCENTRICITIES[i]
 
-            planet = utils.build_planet(self.gm, theme, config.PLANET_COLORS[i], self.add_widget, w, h, self.canvas,
+            planet = utils.build_planet(PLANET_NAMES_ENG[i], self.gm, theme, config.PLANET_COLORS[i], self.add_widget, w, h, self.canvas,
                 PLANET_NAMES[i], MASSES[i], PERIODS[i], ANGLES[i], PERIHELION[i], a, e, self.sun)
             self.planets.append(planet)
 
@@ -93,12 +104,12 @@ class MainWidget(Widget):
             self.dists_manager.clear_dists()
 
     def set_labels(self, checkbox, value):
-        self.sun.set_label_visible(value)
+        self.sun.set_label_visible(False)
         self.moon.set_label_visible(value)
         self.mass_center.set_label_visible(value)
 
-        for planet in self.planets:
-            planet.set_label_visible(value)
+        for i, planet in enumerate(self.planets):
+            planet.set_label_visible(value and (i == 4))
 
     def set_visible(self, name, value):
         body = self.get_body_by_name(name)
@@ -135,6 +146,9 @@ class MainWidget(Widget):
         self.dists_manager.clear_dists()
 
     def change_color(self, scheme):
+        if scheme == 'Matrix Terminal':
+            self.video_writer.release()
+            self.video_writer = None
         theme = styles_dict[scheme]
         self.style = theme
 
@@ -175,12 +189,18 @@ class MainWidget(Widget):
         cy = self.center_y
         w = self.width 
         h = self.height
-        
+
         self.gm.background.instruction.pos = self.pos
         self.gm.background.instruction.size = self.size
 
         self.planets_info.x = self.x
         self.planets_info.top = self.top
+
+        #self.show_date_label.x = self.x + 100
+        #self.show_date_label.top = self.top
+
+        self.show_date_label.center_x = self.center_x
+        self.show_date_label.top = self.top
 
         self.plot_widget.size = (self.width, self.height // 3)
         self.plot_widget.pos = (self.x + w - self.width, 0)
@@ -227,6 +247,27 @@ class MainWidget(Widget):
         self.mass_center.append_trajectory(self.time)
 
     def update_graphic(self, cx, cy, w, h):
+        if self.video_writer:
+            kivy_image = self.export_as_image()
+
+            texture = kivy_image.texture
+            img = np.frombuffer(texture.pixels, dtype=np.uint8)
+            img = img.reshape((texture.height, texture.width, 4))
+
+            pad_x = (1920-texture.width)//2
+            color = np.array([10, 15, 15, 255], dtype=np.uint8)
+            pixel = color[np.newaxis, np.newaxis, :]
+            height = 1080
+            width = 1920
+
+            padded = np.repeat(pixel, height, axis=0)
+            padded = np.repeat(padded, width, axis=1)
+
+            padded[:texture.height, pad_x:(pad_x+texture.width), :] = img[:1080, :1920, :]
+            img_bgr = cv2.cvtColor(padded, cv2.COLOR_RGBA2BGR)
+
+            self.video_writer.write(img_bgr)
+
         for planet in self.planets:
             planet.update_graphic(cx, cy, w, h, self.scale)
 
@@ -267,11 +308,12 @@ class MainWidget(Widget):
         self.on_size(None, None)
 
     def refresh_date(self, label):
-        label.text = self.time.utc_jpl()[:-12] 
+        label.text = self.time.utc_jpl()[:-12]
+        self.show_date_label.text = self.time.utc_jpl()[5:-18]
 
     def change_speed(self, instance, k):
         if self.time_speed == dt.timedelta(0):
-            self.time_speed = dt.timedelta(hours=12) if k > 1 else dt.timedelta(hours=-12)
+            self.time_speed = dt.timedelta(days=120) if k > 1 else dt.timedelta(hours=-12)
             self.pause_btn.text = "Пауза"
             self.pause_btn.disabled = False
             return
